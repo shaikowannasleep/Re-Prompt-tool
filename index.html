@@ -60,30 +60,26 @@
         #mega-modal.open { opacity: 1; pointer-events: auto; }
         
         .role-grid-card {
+            position: relative;
             background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; position: relative;
+            padding: 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s;
         }
         .role-grid-card:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); transform: translateY(-1px); }
         .role-grid-card h4 { font-weight: 600; color: #f1f5f9; font-size: 0.85rem; padding-right: 20px; }
-        .role-grid-card p { font-size: 0.7rem; color: #64748b; margin-top: 4px; }
-        
-        /* Star Toggle in Card */
-        .card-star {
-            position: absolute; top: 8px; right: 8px; 
-            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-            color: #475569; transition: all 0.2s; border-radius: 50%;
-        }
-        .card-star:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
-        .card-star.is-fav { color: #fbbf24; }
-        .card-star.is-fav:hover { color: #f59e0b; }
+        .role-grid-card p { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
 
-        /* Search Input in Modal */
-        .modal-search {
-            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.1);
-            color: white; padding: 8px 12px; border-radius: 6px; width: 250px;
-            font-size: 0.85rem; outline: none; transition: all 0.2s;
+        /* Star Button in Card */
+        .card-star-btn {
+            position: absolute; top: 8px; right: 8px;
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            color: #475569; transition: all 0.2s;
+            z-index: 10;
         }
-        .modal-search:focus { border-color: #3b82f6; background: rgba(15, 23, 42, 0.8); }
+        .card-star-btn:hover { background: rgba(255,255,255,0.1); color: #fbbf24; }
+        .card-star-btn.is-fav { color: #fbbf24; }
+        .card-star-btn i { font-size: 0.8rem; }
 
         /* TOOLTIP SYSTEM */
         #tooltip-portal { 
@@ -102,43 +98,6 @@
         }
         .has-hint { cursor: help; border-bottom: 1px dashed rgba(148, 163, 184, 0.4); }
 
-        /* AUTOFILL SUGGESTION */
-        .suggestion-bar {
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05));
-            border: 1px dashed rgba(59, 130, 246, 0.3);
-            border-radius: 8px;
-            padding: 8px 12px;
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        .suggestion-bar:hover {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.15);
-        }
-        .suggestion-key {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            color: #cbd5e1;
-            font-weight: bold;
-        }
-        .suggestion-text {
-            color: #60a5fa;
-            font-style: italic;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -150,23 +109,30 @@
 
     <!-- MEGA MODAL -->
     <div id="mega-modal">
-        <div class="bg-[#0f172a] w-[95%] max-w-6xl h-[85vh] rounded-xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden transform scale-100 transition-transform duration-200">
-            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900 gap-4">
-                <div class="flex items-center gap-4 flex-grow">
+        <div class="bg-[#0f172a] w-[95%] max-w-6xl h-[90vh] rounded-xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden transform scale-100 transition-transform duration-200">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-slate-800 bg-slate-900 flex flex-col gap-4">
+                <div class="flex justify-between items-start">
                     <div>
-                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2 has-hint" data-tooltip="lib_title">
                             <i class="fa-solid fa-address-book text-blue-500"></i> Persona Library
                         </h2>
-                        <p class="text-xs text-slate-500 hidden sm:block">Select specific roles or toggle star to favorite.</p>
+                        <p class="text-xs text-slate-500">Search and manage your favorite AI roles.</p>
                     </div>
-                    <!-- Search Bar -->
-                    <div class="relative ml-auto sm:ml-6">
-                        <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-                        <input type="text" id="roleSearch" class="modal-search pl-8" placeholder="Search roles (e.g., Unity, Security)...">
-                    </div>
+                    <button id="closeMega" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <button id="closeMega" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+
+                <!-- Search Bar -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-xs"></i>
+                    <input type="text" id="megaSearch" 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none placeholder-slate-600 has-hint"
+                        data-tooltip="lib_search"
+                        placeholder="Search roles (e.g., 'Unity', 'Security', 'Frontend')...">
+                </div>
             </div>
+
+            <!-- Modal Body (Grid) -->
             <div class="flex-grow overflow-y-auto p-6 custom-scrollbar bg-[#0b1120]">
                 <div id="mega-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     <!-- Injected by JS -->
@@ -188,11 +154,11 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold text-white tracking-tight has-hint" data-tooltip="app_title">Prompt Architect</h1>
-                    <p class="text-[10px] text-slate-400 font-mono">v5.2 | Auto-fill Enabled</p>
+                    <p class="text-[10px] text-slate-400 font-mono">v5.2 | Anti-Lazy Code</p>
                 </div>
             </header>
 
-            <form id="inputForm" class="flex-grow flex flex-col gap-4 z-10">
+            <form id="inputForm" class="flex-grow flex flex-col gap-5 z-10">
                 
                 <!-- PERSONA SELECTOR -->
                 <div class="space-y-2">
@@ -203,13 +169,13 @@
                     <!-- Quick Select -->
                     <div class="flex flex-wrap gap-2" id="quickSelectBar">
                         <!-- Favs injected here -->
+                        <button type="button" id="btnOpenAll" class="fav-chip all-chip has-hint" data-tooltip="all_targets">
+                            <i class="fa-solid fa-grid-2"></i> All Targets
+                        </button>
                     </div>
-                    <button type="button" id="btnOpenAll" class="fav-chip all-chip has-hint w-full justify-center mt-1" data-tooltip="all_targets">
-                        <i class="fa-solid fa-grid-2"></i> Open Full Library
-                    </button>
 
                     <!-- Dropdown -->
-                    <div class="relative group mt-2">
+                    <div class="relative group">
                         <select id="roleSelect" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg py-3 pl-3 pr-8 text-xs text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-800 transition font-mono">
                             <!-- Options injected -->
                         </select>
@@ -226,18 +192,10 @@
                 </div>
 
                 <!-- INPUT AREA -->
-                <div class="space-y-2 flex-grow flex flex-col relative">
+                <div class="space-y-2 flex-grow flex flex-col">
                     <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="raw_input">Requirements (Vietnamese)</label>
-                    
                     <textarea id="userInput" class="w-full flex-grow bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none resize-none font-code leading-relaxed placeholder-slate-600 transition focus:bg-slate-900" 
                     placeholder="Mô tả tính năng bạn muốn làm..."></textarea>
-                    
-                    <!-- AUTOFILL SUGGESTION BAR -->
-                    <div id="suggestionBar" class="suggestion-bar hidden">
-                        <span class="suggestion-key">TAB x2</span>
-                        <span>to autofill:</span>
-                        <span id="suggestionText" class="suggestion-text">Example goes here...</span>
-                    </div>
                 </div>
             </form>
 
@@ -262,8 +220,8 @@
                 </div>
                 <h3 class="text-lg font-bold text-slate-300">Context-Aware Generation</h3>
                 <p class="text-slate-500 text-sm mt-2 max-w-md">
-                    Select a persona (e.g., Unity Dev, DevOps) and describe your task. <br>
-                    Use <span class="text-blue-400 font-mono text-xs">TAB x2</span> to quickly load examples.
+                    Select a persona and describe your task. <br>
+                    Add favorites in the <b>Library</b> for quick access.
                 </p>
             </div>
 
@@ -291,7 +249,7 @@
                 <div class="bg-slate-900/80 border-b border-slate-700 p-4 flex justify-between items-center backdrop-blur">
                     <div class="flex items-center gap-3">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-mono text-emerald-400">final_prompt_v5.md</span>
+                        <span class="text-xs font-mono text-emerald-400">final_prompt.md</span>
                     </div>
                     <div class="flex gap-2">
                         <button id="btnCopy" class="px-3 py-1.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-2">
@@ -309,66 +267,50 @@
 
     <!-- LOGIC -->
     <script>
-        /** --- 1. MASSIVE DATA LAYER --- **/
+        /** --- 1. MASSIVE DATA LAYER (Mutable State) --- **/
         const ROLES = [
             // CORE
-            { 
-                id: 'expert', cat: 'Core', lbl: 'Senior Software Engineer', vi: 'Kỹ sư phần mềm cao cấp', desc: 'Generalist expert. Clean code & patterns.', fav: true,
-                example: 'Viết hàm Python sử dụng decorator để đo thời gian chạy, xử lý ngoại lệ và ghi log.'
-            },
-            { 
-                id: 'architect', cat: 'Core', lbl: 'System Architect', vi: 'Kiến trúc sư hệ thống', desc: 'Focus on scalability, microservices.', fav: true,
-                example: 'Thiết kế hệ thống microservices cho ứng dụng E-commerce, sử dụng RabbitMQ để xử lý đơn hàng bất đồng bộ.'
-            },
-            { 
-                id: 'algo', cat: 'Core', lbl: 'Algorithm Specialist', vi: 'Chuyên gia Thuật toán', desc: 'Optimization, Big O.', fav: false,
-                example: 'Tối ưu thuật toán tìm đường A* trên lưới 2D kích thước lớn, sử dụng Priority Queue tùy chỉnh.'
-            },
+            { id: 'expert', cat: 'Core', lbl: 'Senior Software Engineer', vi: 'Kỹ sư phần mềm cao cấp', desc: 'Generalist expert. Clean code & patterns.', fav: true },
+            { id: 'architect', cat: 'Core', lbl: 'System Architect', vi: 'Kiến trúc sư hệ thống', desc: 'Focus on scalability, microservices, and high-level design.', fav: true },
+            { id: 'algo', cat: 'Core', lbl: 'Algorithm Specialist', vi: 'Chuyên gia Thuật toán', desc: 'Optimization, Big O, Data Structures.', fav: false },
 
             // GAME DEV
-            { 
-                id: 'unity_gp', cat: 'Game Dev', lbl: 'Unity Gameplay', vi: 'Lập trình Gameplay Unity', desc: 'C#, Monobehaviour, Logic.', fav: true,
-                example: 'Viết script C# điều khiển nhân vật di chuyển bằng CharacterController, hỗ trợ nhảy 2 bước (double jump) và lướt (dash).'
-            },
-            { 
-                id: 'unity_dots', cat: 'Game Dev', lbl: 'Unity DOTS', vi: 'Tối ưu hiệu năng Unity', desc: 'ECS, Jobs System.', fav: false,
-                example: 'Chuyển đổi logic di chuyển của 10,000 unit từ MonoBehaviour sang ECS/Jobs System để đảm bảo 60fps.'
-            },
-            { 
-                id: 'unity_shader', cat: 'Game Dev', lbl: 'Tech Artist', vi: 'Kỹ thuật Shader/VFX', desc: 'HLSL, Shader Graph.', fav: false,
-                example: 'Viết Shader HLSL tạo hiệu ứng lá chắn năng lượng (Energy Shield) có phản ứng khi bị đạn bắn vào.'
-            },
+            { id: 'unity_gp', cat: 'Game Dev', lbl: 'Unity Gameplay', vi: 'Lập trình Gameplay Unity', desc: 'C#, Monobehaviour, Game Loop logic.', fav: true },
+            { id: 'unity_dots', cat: 'Game Dev', lbl: 'Unity DOTS/Performance', vi: 'Tối ưu hiệu năng Unity', desc: 'ECS, Jobs System, Memory management.', fav: false },
+            { id: 'unity_shader', cat: 'Game Dev', lbl: 'Tech Artist (Shader)', vi: 'Kỹ thuật Shader/VFX', desc: 'HLSL, Shader Graph, GPU optimization.', fav: false },
+            { id: 'unreal_cpp', cat: 'Game Dev', lbl: 'Unreal C++ Engineer', vi: 'Kỹ sư Unreal C++', desc: 'UE5, Blueprints to C++, Networking.', fav: false },
+            { id: 'godot', cat: 'Game Dev', lbl: 'Godot Developer', vi: 'Lập trình viên Godot', desc: 'GDScript, 2D/3D indie development.', fav: false },
 
             // WEB
-            { 
-                id: 'fe_react', cat: 'Web', lbl: 'React Specialist', vi: 'Chuyên gia ReactJS', desc: 'Hooks, State, Next.js.', fav: false,
-                example: 'Tạo Custom Hook useFetch hỗ trợ caching, retry khi lỗi mạng và abort signal.'
-            },
-            { 
-                id: 'be_node', cat: 'Web', lbl: 'Node.js Backend', vi: 'Backend Node.js', desc: 'Express/NestJS, Microservices.', fav: false,
-                example: 'Xây dựng API RESTful bằng NestJS, xác thực JWT và kết nối MongoDB.'
-            },
+            { id: 'fe_react', cat: 'Web', lbl: 'React Specialist', vi: 'Chuyên gia ReactJS', desc: 'Hooks, State Management, Next.js.', fav: false },
+            { id: 'be_node', cat: 'Web', lbl: 'Node.js Backend', vi: 'Backend Node.js', desc: 'Express/NestJS, Microservices, MongoDB.', fav: false },
+            { id: 'be_go', cat: 'Web', lbl: 'Golang Engineer', vi: 'Kỹ sư Golang', desc: 'Concurrency, High throughput systems.', fav: false },
+            { id: 'fullstack', cat: 'Web', lbl: 'Fullstack Developer', vi: 'Lập trình Fullstack', desc: 'End-to-end web development.', fav: false },
 
-            // DATA
-            { 
-                id: 'ai_ml', cat: 'Data', lbl: 'AI/ML Engineer', vi: 'Kỹ sư AI/Machine Learning', desc: 'Python, PyTorch.', fav: false,
-                example: 'Fine-tune mô hình BERT để phân loại cảm xúc từ bình luận tiếng Việt.'
-            },
+            // DATA & AI
+            { id: 'ai_ml', cat: 'Data', lbl: 'AI/ML Engineer', vi: 'Kỹ sư AI/Machine Learning', desc: 'Python, PyTorch, Model integration.', fav: false },
+            { id: 'data_eng', cat: 'Data', lbl: 'Data Engineer', vi: 'Kỹ sư dữ liệu', desc: 'ETL Pipelines, Big Data, SQL optimization.', fav: false },
 
-            // INFRA
-            { 
-                id: 'security', cat: 'Infra', lbl: 'Security Researcher', vi: 'Chuyên gia bảo mật', desc: 'Penetration testing, OWASP.', fav: false,
-                example: 'Kiểm tra và vá lỗ hổng SQL Injection trong endpoint đăng nhập, sử dụng Prepared Statements.'
-            }
+            // INFRA & SEC
+            { id: 'devops', cat: 'Infra', lbl: 'DevOps Engineer', vi: 'Kỹ sư DevOps', desc: 'CI/CD, Docker, Kubernetes, AWS.', fav: false },
+            { id: 'security', cat: 'Infra', lbl: 'Security Researcher', vi: 'Chuyên gia bảo mật', desc: 'Penetration testing, OWASP, Auditing.', fav: false },
+            { id: 'sre', cat: 'Infra', lbl: 'Site Reliability Eng', vi: 'Kỹ sư vận hành (SRE)', desc: 'Uptime, Monitoring, Incident response.', fav: false },
+
+            // MOBILE & EMBEDDED
+            { id: 'ios', cat: 'Mobile', lbl: 'iOS Engineer', vi: 'Lập trình iOS (Swift)', desc: 'SwiftUI, UIKit, Apple Ecosystem.', fav: false },
+            { id: 'android', cat: 'Mobile', lbl: 'Android Engineer', vi: 'Lập trình Android (Kotlin)', desc: 'Kotlin, Jetpack Compose.', fav: false },
+            { id: 'flutter', cat: 'Mobile', lbl: 'Flutter Developer', vi: 'Lập trình Flutter', desc: 'Cross-platform mobile apps.', fav: false },
+            { id: 'embedded', cat: 'Embedded', lbl: 'Embedded Systems Eng', vi: 'Kỹ sư nhúng', desc: 'C/C++, Firmware, Hardware interface.', fav: false }
         ];
 
         const TOOLTIPS_VI = {
             'app_title': 'Công cụ tạo Prompt chuyên nghiệp cho AI Code.',
             'target_persona': 'Vai trò AI: Chọn đúng vai trò sẽ giúp AI dùng đúng từ vựng chuyên ngành.',
-            'all_targets': 'Xem thư viện Persona. Dùng thanh tìm kiếm để lọc, và ấn dấu Sao để thêm vào mục yêu thích.',
+            'all_targets': 'Mở thư viện toàn bộ các vai trò. Có thể tìm kiếm và đánh dấu yêu thích.',
             'raw_input': 'Nhập yêu cầu của bạn bằng tiếng Việt tự nhiên. Hệ thống sẽ tự dịch.',
             'btn_analyze': 'Phân tích yêu cầu và đề xuất chiến lược phù hợp nhất với vai trò đã chọn.',
-            'fav_btn': 'Ấn để thêm/bỏ vai trò này khỏi thanh chọn nhanh.'
+            'lib_title': 'Thư viện Vai trò. Nơi bạn tìm kiếm và quản lý danh sách yêu thích.',
+            'lib_search': 'Nhập từ khóa để lọc danh sách. Ví dụ: "Web", "Game", "Unity"...'
         };
 
         /** --- 2. DYNAMIC STRATEGY ENGINE --- **/
@@ -377,7 +319,6 @@
             const cat = role ? role.cat : 'Core';
             const strategies = [];
 
-            // 1. Implementation
             strategies.push({
                 title: "Implementation Focus",
                 icon: "fa-code",
@@ -385,12 +326,11 @@
                 promptMod: "Focus strictly on implementation details, clean syntax, and functional correctness."
             });
 
-            // 2. Category Specific
             if (cat === 'Game Dev') {
                 strategies.push({
                     title: "Performance & Optimization",
                     icon: "fa-gauge-high",
-                    desc: "Tối ưu FPS, Memory, Garbage Collection.",
+                    desc: "Tối ưu FPS, Memory, Garbage Collection (Quan trọng cho Game).",
                     promptMod: "Prioritize performance, memory management, and frame-rate optimization. Use object pooling and avoid garbage collection spikes."
                 });
                 strategies.push({
@@ -422,7 +362,6 @@
                 });
             }
 
-            // 3. Robustness
             strategies.push({
                 title: "Defensive Programming",
                 icon: "fa-bug-slash",
@@ -435,7 +374,7 @@
 
         /** --- 3. CONTROLLER --- **/
         const App = {
-            state: { roleId: 'expert', input: '', searchTerm: '', lastTabTime: 0 },
+            state: { roleId: 'expert', input: '', filter: '' },
 
             init() {
                 this.dom = {
@@ -446,7 +385,7 @@
                     infoExp: document.getElementById('infoExpertise'),
                     megaModal: document.getElementById('mega-modal'),
                     megaGrid: document.getElementById('mega-grid'),
-                    roleSearch: document.getElementById('roleSearch'),
+                    megaSearch: document.getElementById('megaSearch'),
                     views: {
                         idle: document.getElementById('viewIdle'),
                         strategy: document.getElementById('viewStrategy'),
@@ -455,8 +394,6 @@
                     stratContainer: document.getElementById('strategyContainer'),
                     output: document.getElementById('outputArea'),
                     input: document.getElementById('userInput'),
-                    suggestionBar: document.getElementById('suggestionBar'),
-                    suggestionText: document.getElementById('suggestionText'),
                     tooltip: {
                         el: document.getElementById('tooltip-portal'),
                         content: document.querySelector('.tooltip-content')
@@ -465,7 +402,7 @@
 
                 this.renderUI();
                 this.bindEvents();
-                this.setRole('expert'); 
+                this.setRole('expert');
             },
 
             renderUI() {
@@ -482,25 +419,29 @@
 
             renderQuickSelect() {
                 const favorites = ROLES.filter(r => r.fav);
-                this.dom.quickSelect.innerHTML = ''; // Clear
+                const allBtn = document.getElementById('btnOpenAll');
+                
+                // Clear old favs
+                Array.from(this.dom.quickSelect.children).forEach(child => {
+                    if (child.id !== 'btnOpenAll') child.remove();
+                });
 
                 favorites.forEach(r => {
                     const btn = document.createElement('button');
-                    btn.className = `fav-chip ${this.state.roleId === r.id ? 'active' : ''}`;
+                    btn.className = `fav-chip ${r.id === this.state.roleId ? 'active' : ''}`;
                     btn.innerHTML = `<i class="fa-solid fa-star"></i> ${r.lbl}`;
                     btn.onclick = () => this.setRole(r.id);
-                    btn.dataset.role = r.id;
-                    this.dom.quickSelect.appendChild(btn);
+                    btn.dataset.role = r.id; 
+                    this.dom.quickSelect.insertBefore(btn, allBtn);
                 });
             },
 
             renderMegaGrid() {
-                const term = this.state.searchTerm.toLowerCase();
-                
+                const filter = this.state.filter.toLowerCase();
                 const filteredRoles = ROLES.filter(r => 
-                    r.lbl.toLowerCase().includes(term) || 
-                    r.vi.toLowerCase().includes(term) ||
-                    r.cat.toLowerCase().includes(term)
+                    r.lbl.toLowerCase().includes(filter) || 
+                    r.vi.toLowerCase().includes(filter) || 
+                    r.desc.toLowerCase().includes(filter)
                 );
 
                 const groups = {};
@@ -509,76 +450,46 @@
                     groups[r.cat].push(r);
                 });
 
-                if (filteredRoles.length === 0) {
-                    this.dom.megaGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No roles found matching "${this.state.searchTerm}"</div>`;
-                    return;
-                }
-
                 let gridHtml = '';
-                for(const [cat, list] of Object.entries(groups)) {
-                    gridHtml += `<div class="col-span-full mt-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1">${cat}</div>`;
-                    list.forEach(r => {
-                        const starClass = r.fav ? 'is-fav fa-solid' : 'fa-regular';
-                        const cardClass = r.id === this.state.roleId ? 'border-blue-500 bg-blue-500/10' : '';
-                        
-                        gridHtml += `
-                            <div class="role-grid-card ${cardClass}" onclick="App.setRole('${r.id}'); App.toggleMega(false)">
-                                <h4>${r.lbl}</h4>
-                                <p>${r.vi}</p>
-                                <button class="card-star has-hint ${r.fav ? 'is-fav' : ''}" 
-                                        data-tooltip="fav_btn"
-                                        onclick="App.toggleFav(event, '${r.id}')">
-                                    <i class="${starClass} fa-star"></i>
-                                </button>
-                            </div>
-                        `;
-                    });
+                if (filteredRoles.length === 0) {
+                    gridHtml = `<div class="col-span-full text-center text-slate-500 mt-10">No roles found matching "${this.state.filter}"</div>`;
+                } else {
+                    for(const [cat, list] of Object.entries(groups)) {
+                        gridHtml += `<div class="col-span-full mt-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1">${cat}</div>`;
+                        list.forEach(r => {
+                            gridHtml += `
+                                <div class="role-grid-card" onclick="App.setRole('${r.id}'); App.toggleMega(false)">
+                                    <div class="card-star-btn ${r.fav ? 'is-fav' : ''}" onclick="App.toggleFavorite('${r.id}', event)">
+                                        <i class="fa-${r.fav ? 'solid' : 'regular'} fa-star"></i>
+                                    </div>
+                                    <h4>${r.lbl}</h4>
+                                    <p>${r.vi}</p>
+                                </div>
+                            `;
+                        });
+                    }
                 }
                 this.dom.megaGrid.innerHTML = gridHtml;
             },
 
             bindEvents() {
                 this.dom.roleSelect.addEventListener('change', (e) => this.setRole(e.target.value));
-                this.dom.roleSearch.addEventListener('input', (e) => {
-                    this.state.searchTerm = e.target.value;
+                document.getElementById('btnOpenAll').addEventListener('click', () => {
+                    this.state.filter = ''; // Reset filter on open
+                    this.dom.megaSearch.value = '';
                     this.renderMegaGrid();
+                    this.toggleMega(true);
+                    setTimeout(() => this.dom.megaSearch.focus(), 100);
                 });
-
-                // --- DOUBLE TAB LISTENER ---
-                this.dom.input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Tab') {
-                        e.preventDefault(); // Prevent focus loss
-                        
-                        const currentTime = new Date().getTime();
-                        const gap = currentTime - this.state.lastTabTime;
-                        
-                        if (gap < 300 && gap > 0) {
-                            // Double Tab Detected
-                            this.autoFillExample();
-                            this.state.lastTabTime = 0; // Reset
-                        } else {
-                            this.state.lastTabTime = currentTime;
-                        }
-                    }
-                });
-                
-                // Show hint if empty on input change
-                this.dom.input.addEventListener('input', (e) => {
-                    if(e.target.value.trim() === '') {
-                        this.dom.suggestionBar.classList.remove('hidden');
-                    } else {
-                        this.dom.suggestionBar.classList.add('hidden');
-                    }
-                });
-
-                // Suggestion bar click to fill
-                this.dom.suggestionBar.addEventListener('click', () => this.autoFillExample());
-
-                // Standard bindings...
-                document.getElementById('btnOpenAll').addEventListener('click', () => this.toggleMega(true));
                 document.getElementById('closeMega').addEventListener('click', () => this.toggleMega(false));
                 this.dom.megaModal.addEventListener('click', (e) => {
                     if(e.target === this.dom.megaModal) this.toggleMega(false);
+                });
+
+                // Search Listener
+                this.dom.megaSearch.addEventListener('keyup', (e) => {
+                    this.state.filter = e.target.value;
+                    this.renderMegaGrid();
                 });
 
                 document.getElementById('btnAnalyze').addEventListener('click', () => this.analyze());
@@ -589,6 +500,7 @@
                     alert('Copied to clipboard!');
                 });
 
+                // Global Tooltip Delegation (Covers new elements)
                 document.body.addEventListener('mouseover', (e) => {
                     const target = e.target.closest('[data-tooltip]');
                     if (target) this.showTooltip(target, target.dataset.tooltip);
@@ -598,59 +510,38 @@
                 });
             },
 
+            toggleFavorite(id, event) {
+                event.stopPropagation(); // Prevent selecting the role when clicking star
+                const role = ROLES.find(r => r.id === id);
+                if (role) {
+                    role.fav = !role.fav;
+                    this.renderMegaGrid(); // Update star icon state
+                    this.renderQuickSelect(); // Update top bar chips
+                }
+            },
+
             setRole(id) {
                 this.state.roleId = id;
                 this.dom.roleSelect.value = id;
                 
-                const buttons = this.dom.quickSelect.querySelectorAll('.fav-chip');
-                buttons.forEach(btn => {
+                // Update Quick Select Active State
+                Array.from(this.dom.quickSelect.children).forEach(btn => {
                     if (btn.dataset.role === id) btn.classList.add('active');
                     else btn.classList.remove('active');
                 });
 
+                // Update Info Box
                 const role = ROLES.find(r => r.id === id);
                 if (role) {
                     this.dom.infoBox.classList.remove('hidden');
                     this.dom.infoDesc.textContent = role.desc;
                     this.dom.infoExp.textContent = role.cat;
-                    
-                    // Update Suggestion Bar
-                    this.dom.suggestionText.textContent = role.example || 'No example available.';
-                    if(this.dom.input.value.trim() === '') {
-                        this.dom.suggestionBar.classList.remove('hidden');
-                    }
-                }
-            },
-
-            autoFillExample() {
-                const role = ROLES.find(r => r.id === this.state.roleId);
-                if (role && role.example) {
-                    this.dom.input.value = role.example;
-                    this.dom.suggestionBar.classList.add('hidden');
-                    
-                    // Visual feedback
-                    this.dom.input.classList.add('ring-2', 'ring-blue-500');
-                    setTimeout(() => this.dom.input.classList.remove('ring-2', 'ring-blue-500'), 300);
-                }
-            },
-
-            toggleFav(e, id) {
-                e.stopPropagation();
-                const role = ROLES.find(r => r.id === id);
-                if(role) {
-                    role.fav = !role.fav;
-                    this.renderMegaGrid();
-                    this.renderQuickSelect();
                 }
             },
 
             toggleMega(show) {
-                if(show) {
-                    this.dom.megaModal.classList.add('open');
-                    this.dom.roleSearch.focus();
-                } else {
-                    this.dom.megaModal.classList.remove('open');
-                }
+                if(show) this.dom.megaModal.classList.add('open');
+                else this.dom.megaModal.classList.remove('open');
             },
 
             showTooltip(el, key) {
@@ -666,13 +557,8 @@
                 `;
                 
                 const rect = el.getBoundingClientRect();
-                const spaceBelow = window.innerHeight - rect.bottom;
-                let topPos = rect.bottom + 8;
-                if (spaceBelow < 100) {
-                     topPos = rect.top - tooltip.content.offsetHeight - 8;
-                }
-
-                tooltip.el.style.top = `${topPos}px`;
+                
+                tooltip.el.style.top = `${rect.bottom + 8}px`;
                 tooltip.el.style.left = `${rect.left}px`;
                 tooltip.el.style.opacity = '1';
                 tooltip.el.style.transform = 'translateY(0)';
@@ -736,6 +622,14 @@ CRITICAL INSTRUCTIONS FOR ONE-SHOT GENERATION:
 3.  **NO HALLUCINATIONS:** Verify libraries exist.
 4.  **ROBUSTNESS:** Include error handling and comments explaining *why* you chose this approach.
 
+**STRICT CODE GENERATION RULES:**
+1. **NO "LAZY" IMPLEMENTATIONS:** You are strictly FORBIDDEN from generating empty logic blocks such as:
+   \`case State.Engaging: // Handled by animation break;\`
+   You MUST implement the actual logic, event subscriptions, or robust stubs. Code must be fully functional.
+2. **COMPLETE CODE ONLY:** Never use placeholders like \`// ... existing code ...\`. Output the full, runnable file.
+3. **VARIABLE PERSISTENCE:** Do NOT rename existing variables unless explicitly asked. Preserving legacy naming is a priority.
+4. **VERIFICATION PROTOCOL:** Mentally triple-check the code for syntax and logic errors before outputting.
+
 OUTPUT FORMAT:
 - Brief Architectural Decision (Why this approach?)
 - The Complete Code Block
@@ -758,7 +652,6 @@ OUTPUT FORMAT:
             }
         };
 
-        // Init
         window.App = App;
         document.addEventListener('DOMContentLoaded', () => App.init());
     </script>
