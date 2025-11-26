@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Canvas Prompt Architect v5.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Animations */
+        .fade-enter { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms, transform 300ms; }
+        .btn-hover:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.2); }
+
+        /* Quick Select Chips */
+        .fav-chip {
+            font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; background: rgba(15, 23, 42, 0.6); color: #94a3b8;
+            display: flex; align-items: center; gap: 6px; font-weight: 500;
+        }
+        .fav-chip:hover { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: #cbd5e1; }
+        .fav-chip.active { background: rgba(37, 99, 235, 0.2); border-color: #3b82f6; color: #fff; }
+        .fav-chip i { color: #fbbf24; font-size: 0.7rem; } 
+
+        .all-chip { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .all-chip:hover { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); }
+
+        /* MEGA MODAL */
+        #mega-modal {
+            position: fixed; inset: 0; z-index: 50;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        #mega-modal.open { opacity: 1; pointer-events: auto; }
+        
+        .role-grid-card {
+            background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; position: relative;
+        }
+        .role-grid-card:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); transform: translateY(-1px); }
+        .role-grid-card h4 { font-weight: 600; color: #f1f5f9; font-size: 0.85rem; padding-right: 20px; }
+        .role-grid-card p { font-size: 0.7rem; color: #64748b; margin-top: 4px; }
+        
+        /* Star Toggle in Card */
+        .card-star {
+            position: absolute; top: 8px; right: 8px; 
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+            color: #475569; transition: all 0.2s; border-radius: 50%;
+        }
+        .card-star:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+        .card-star.is-fav { color: #fbbf24; }
+        .card-star.is-fav:hover { color: #f59e0b; }
+
+        /* Search Input in Modal */
+        .modal-search {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 8px 12px; border-radius: 6px; width: 250px;
+            font-size: 0.85rem; outline: none; transition: all 0.2s;
+        }
+        .modal-search:focus { border-color: #3b82f6; background: rgba(15, 23, 42, 0.8); }
+
+        /* TOOLTIP SYSTEM */
+        #tooltip-portal { 
+            position: fixed; z-index: 9999; pointer-events: none; opacity: 0; 
+            transition: opacity 0.15s, transform 0.15s; transform: translateY(4px); max-width: 320px; 
+        }
+        .tooltip-content { 
+            background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #e2e8f0; 
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.8);
+            line-height: 1.5;
+        }
+        .tooltip-header {
+            color: #60a5fa; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; 
+            margin-bottom: 4px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;
+        }
+        .has-hint { cursor: help; border-bottom: 1px dashed rgba(148, 163, 184, 0.4); }
+
+        /* AUTOFILL SUGGESTION */
+        .suggestion-bar {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1px dashed rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .suggestion-bar:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+        }
+        .suggestion-key {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: #cbd5e1;
+            font-weight: bold;
+        }
+        .suggestion-text {
+            color: #60a5fa;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center p-4 lg:p-8 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
+
+    <!-- MEGA MODAL -->
+    <div id="mega-modal">
+        <div class="bg-[#0f172a] w-[95%] max-w-6xl h-[85vh] rounded-xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden transform scale-100 transition-transform duration-200">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900 gap-4">
+                <div class="flex items-center gap-4 flex-grow">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-address-book text-blue-500"></i> Persona Library
+                        </h2>
+                        <p class="text-xs text-slate-500 hidden sm:block">Select specific roles or toggle star to favorite.</p>
+                    </div>
+                    <!-- Search Bar -->
+                    <div class="relative ml-auto sm:ml-6">
+                        <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="roleSearch" class="modal-search pl-8" placeholder="Search roles (e.g., Unity, Security)...">
+                    </div>
+                </div>
+                <button id="closeMega" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-6 custom-scrollbar bg-[#0b1120]">
+                <div id="mega-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOLTIP PORTAL -->
+    <div id="tooltip-portal"><div class="tooltip-content"></div></div>
+
+    <div class="w-full max-w-7xl h-[92vh] grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- LEFT PANEL: CONFIGURATION -->
+        <div class="col-span-1 lg:col-span-4 glass-panel rounded-2xl p-6 flex flex-col h-full relative overflow-hidden">
+            <header class="mb-5 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-tight has-hint" data-tooltip="app_title">Prompt Architect</h1>
+                    <p class="text-[10px] text-slate-400 font-mono">v5.2 | Auto-fill Enabled</p>
+                </div>
+            </header>
+
+            <form id="inputForm" class="flex-grow flex flex-col gap-4 z-10">
+                
+                <!-- PERSONA SELECTOR -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="target_persona">Target Persona</label>
+                    </div>
+                    
+                    <!-- Quick Select -->
+                    <div class="flex flex-wrap gap-2" id="quickSelectBar">
+                        <!-- Favs injected here -->
+                    </div>
+                    <button type="button" id="btnOpenAll" class="fav-chip all-chip has-hint w-full justify-center mt-1" data-tooltip="all_targets">
+                        <i class="fa-solid fa-grid-2"></i> Open Full Library
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div class="relative group mt-2">
+                        <select id="roleSelect" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg py-3 pl-3 pr-8 text-xs text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-800 transition font-mono">
+                            <!-- Options injected -->
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-500 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Dynamic Info Box -->
+                    <div id="personaInfoBox" class="bg-slate-900/50 border-l-2 border-blue-500 p-3 rounded-r text-xs text-slate-400 hidden">
+                        <p id="infoDesc" class="mb-1 leading-relaxed">...</p>
+                        <div class="flex gap-2 mt-2">
+                            <span class="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px]">Expertise: <b id="infoExpertise">...</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INPUT AREA -->
+                <div class="space-y-2 flex-grow flex flex-col relative">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="raw_input">Requirements (Vietnamese)</label>
+                    
+                    <textarea id="userInput" class="w-full flex-grow bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none resize-none font-code leading-relaxed placeholder-slate-600 transition focus:bg-slate-900" 
+                    placeholder="Mô tả tính năng bạn muốn làm..."></textarea>
+                    
+                    <!-- AUTOFILL SUGGESTION BAR -->
+                    <div id="suggestionBar" class="suggestion-bar hidden">
+                        <span class="suggestion-key">TAB x2</span>
+                        <span>to autofill:</span>
+                        <span id="suggestionText" class="suggestion-text">Example goes here...</span>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-4 z-10">
+                <button id="btnAnalyze" class="w-full btn-hover bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all has-hint" data-tooltip="btn_analyze">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Generate & Translate</span>
+                </button>
+            </div>
+            
+            <!-- Decor -->
+            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+        </div>
+
+        <!-- RIGHT PANEL: CONTEXTUAL OUTPUT -->
+        <div class="col-span-1 lg:col-span-8 h-full relative">
+            
+            <!-- IDLE VIEW -->
+            <div id="viewIdle" class="absolute inset-0 flex flex-col items-center justify-center glass-panel rounded-2xl border-dashed border-2 border-slate-700/50 p-8 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-layer-group text-3xl text-slate-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-300">Context-Aware Generation</h3>
+                <p class="text-slate-500 text-sm mt-2 max-w-md">
+                    Select a persona (e.g., Unity Dev, DevOps) and describe your task. <br>
+                    Use <span class="text-blue-400 font-mono text-xs">TAB x2</span> to quickly load examples.
+                </p>
+            </div>
+
+            <!-- STRATEGY VIEW -->
+            <div id="viewStrategy" class="hidden absolute inset-0 glass-panel rounded-2xl p-8 flex flex-col fade-enter-active">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chess-knight text-emerald-400"></i> Dynamic Strategy
+                        </h2>
+                        <p class="text-slate-400 text-xs mt-1">
+                            Strategies tailored for: <span id="strategyRoleLabel" class="text-blue-400 font-mono">...</span>
+                        </p>
+                    </div>
+                    <button id="btnBack" class="text-slate-500 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow content-start" id="strategyContainer">
+                    <!-- Dynamic Strategies -->
+                </div>
+            </div>
+
+            <!-- RESULT VIEW -->
+            <div id="viewResult" class="hidden absolute inset-0 glass-panel rounded-2xl flex flex-col fade-enter-active overflow-hidden">
+                <div class="bg-slate-900/80 border-b border-slate-700 p-4 flex justify-between items-center backdrop-blur">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs font-mono text-emerald-400">final_prompt_v5.md</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btnCopy" class="px-3 py-1.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-2">
+                            <i class="fa-regular fa-copy"></i> Copy Prompt
+                        </button>
+                    </div>
+                </div>
+                <div class="relative flex-grow bg-[#0b1120]">
+                    <textarea id="outputArea" readonly class="w-full h-full bg-transparent p-6 text-xs font-code text-slate-300 resize-none outline-none leading-relaxed custom-scrollbar"></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        /** --- 1. MASSIVE DATA LAYER --- **/
+        const ROLES = [
+            // CORE
+            { 
+                id: 'expert', cat: 'Core', lbl: 'Senior Software Engineer', vi: 'Kỹ sư phần mềm cao cấp', desc: 'Generalist expert. Clean code & patterns.', fav: true,
+                example: 'Viết hàm Python sử dụng decorator để đo thời gian chạy, xử lý ngoại lệ và ghi log.'
+            },
+            { 
+                id: 'architect', cat: 'Core', lbl: 'System Architect', vi: 'Kiến trúc sư hệ thống', desc: 'Focus on scalability, microservices.', fav: true,
+                example: 'Thiết kế hệ thống microservices cho ứng dụng E-commerce, sử dụng RabbitMQ để xử lý đơn hàng bất đồng bộ.'
+            },
+            { 
+                id: 'algo', cat: 'Core', lbl: 'Algorithm Specialist', vi: 'Chuyên gia Thuật toán', desc: 'Optimization, Big O.', fav: false,
+                example: 'Tối ưu thuật toán tìm đường A* trên lưới 2D kích thước lớn, sử dụng Priority Queue tùy chỉnh.'
+            },
+
+            // GAME DEV
+            { 
+                id: 'unity_gp', cat: 'Game Dev', lbl: 'Unity Gameplay', vi: 'Lập trình Gameplay Unity', desc: 'C#, Monobehaviour, Logic.', fav: true,
+                example: 'Viết script C# điều khiển nhân vật di chuyển bằng CharacterController, hỗ trợ nhảy 2 bước (double jump) và lướt (dash).'
+            },
+            { 
+                id: 'unity_dots', cat: 'Game Dev', lbl: 'Unity DOTS', vi: 'Tối ưu hiệu năng Unity', desc: 'ECS, Jobs System.', fav: false,
+                example: 'Chuyển đổi logic di chuyển của 10,000 unit từ MonoBehaviour sang ECS/Jobs System để đảm bảo 60fps.'
+            },
+            { 
+                id: 'unity_shader', cat: 'Game Dev', lbl: 'Tech Artist', vi: 'Kỹ thuật Shader/VFX', desc: 'HLSL, Shader Graph.', fav: false,
+                example: 'Viết Shader HLSL tạo hiệu ứng lá chắn năng lượng (Energy Shield) có phản ứng khi bị đạn bắn vào.'
+            },
+
+            // WEB
+            { 
+                id: 'fe_react', cat: 'Web', lbl: 'React Specialist', vi: 'Chuyên gia ReactJS', desc: 'Hooks, State, Next.js.', fav: false,
+                example: 'Tạo Custom Hook useFetch hỗ trợ caching, retry khi lỗi mạng và abort signal.'
+            },
+            { 
+                id: 'be_node', cat: 'Web', lbl: 'Node.js Backend', vi: 'Backend Node.js', desc: 'Express/NestJS, Microservices.', fav: false,
+                example: 'Xây dựng API RESTful bằng NestJS, xác thực JWT và kết nối MongoDB.'
+            },
+
+            // DATA
+            { 
+                id: 'ai_ml', cat: 'Data', lbl: 'AI/ML Engineer', vi: 'Kỹ sư AI/Machine Learning', desc: 'Python, PyTorch.', fav: false,
+                example: 'Fine-tune mô hình BERT để phân loại cảm xúc từ bình luận tiếng Việt.'
+            },
+
+            // INFRA
+            { 
+                id: 'security', cat: 'Infra', lbl: 'Security Researcher', vi: 'Chuyên gia bảo mật', desc: 'Penetration testing, OWASP.', fav: false,
+                example: 'Kiểm tra và vá lỗ hổng SQL Injection trong endpoint đăng nhập, sử dụng Prepared Statements.'
+            }
+        ];
+
+        const TOOLTIPS_VI = {
+            'app_title': 'Công cụ tạo Prompt chuyên nghiệp cho AI Code.',
+            'target_persona': 'Vai trò AI: Chọn đúng vai trò sẽ giúp AI dùng đúng từ vựng chuyên ngành.',
+            'all_targets': 'Xem thư viện Persona. Dùng thanh tìm kiếm để lọc, và ấn dấu Sao để thêm vào mục yêu thích.',
+            'raw_input': 'Nhập yêu cầu của bạn bằng tiếng Việt tự nhiên. Hệ thống sẽ tự dịch.',
+            'btn_analyze': 'Phân tích yêu cầu và đề xuất chiến lược phù hợp nhất với vai trò đã chọn.',
+            'fav_btn': 'Ấn để thêm/bỏ vai trò này khỏi thanh chọn nhanh.'
+        };
+
+        /** --- 2. DYNAMIC STRATEGY ENGINE --- **/
+        function getStrategiesForRole(roleId) {
+            const role = ROLES.find(r => r.id === roleId);
+            const cat = role ? role.cat : 'Core';
+            const strategies = [];
+
+            // 1. Implementation
+            strategies.push({
+                title: "Implementation Focus",
+                icon: "fa-code",
+                desc: "Code chính xác, chạy được ngay. Tối ưu cho task cụ thể.",
+                promptMod: "Focus strictly on implementation details, clean syntax, and functional correctness."
+            });
+
+            // 2. Category Specific
+            if (cat === 'Game Dev') {
+                strategies.push({
+                    title: "Performance & Optimization",
+                    icon: "fa-gauge-high",
+                    desc: "Tối ưu FPS, Memory, Garbage Collection.",
+                    promptMod: "Prioritize performance, memory management, and frame-rate optimization. Use object pooling and avoid garbage collection spikes."
+                });
+                strategies.push({
+                    title: "Scalable Game Architecture",
+                    icon: "fa-cubes-stacked",
+                    desc: "Thiết kế hệ thống Module, dễ mở rộng DLC/Feature.",
+                    promptMod: "Design a modular architecture suitable for game development (e.g., Component patterns, ScriptableObjects)."
+                });
+            } else if (cat === 'Infra' || roleId === 'security') {
+                strategies.push({
+                    title: "Zero-Trust Security",
+                    icon: "fa-shield-virus",
+                    desc: "Bảo mật tuyệt đối, Valid input, chống Injection.",
+                    promptMod: "Adopt a Zero-Trust security model. Validate all inputs, sanitize data, and follow OWASP best practices."
+                });
+            } else if (cat === 'Web') {
+                strategies.push({
+                    title: "Scalable Microservices",
+                    icon: "fa-network-wired",
+                    desc: "Thiết kế tách biệt, API Gateway, Database Sharding.",
+                    promptMod: "Design for horizontal scalability. Consider microservices boundaries, API versioning, and database consistency."
+                });
+            } else {
+                strategies.push({
+                    title: "Design Patterns & Arch",
+                    icon: "fa-sitemap",
+                    desc: "Áp dụng mẫu thiết kế chuẩn (Factory, Observer...).",
+                    promptMod: "Apply appropriate GoF Design Patterns. Ensure the code is loosely coupled and highly cohesive."
+                });
+            }
+
+            // 3. Robustness
+            strategies.push({
+                title: "Defensive Programming",
+                icon: "fa-bug-slash",
+                desc: "Xử lý mọi lỗi có thể xảy ra (Edge-cases).",
+                promptMod: "Focus on error handling, logging, and graceful degradation. Cover edge cases."
+            });
+
+            return strategies.slice(0, 3);
+        }
+
+        /** --- 3. CONTROLLER --- **/
+        const App = {
+            state: { roleId: 'expert', input: '', searchTerm: '', lastTabTime: 0 },
+
+            init() {
+                this.dom = {
+                    roleSelect: document.getElementById('roleSelect'),
+                    quickSelect: document.getElementById('quickSelectBar'),
+                    infoBox: document.getElementById('personaInfoBox'),
+                    infoDesc: document.getElementById('infoDesc'),
+                    infoExp: document.getElementById('infoExpertise'),
+                    megaModal: document.getElementById('mega-modal'),
+                    megaGrid: document.getElementById('mega-grid'),
+                    roleSearch: document.getElementById('roleSearch'),
+                    views: {
+                        idle: document.getElementById('viewIdle'),
+                        strategy: document.getElementById('viewStrategy'),
+                        result: document.getElementById('viewResult')
+                    },
+                    stratContainer: document.getElementById('strategyContainer'),
+                    output: document.getElementById('outputArea'),
+                    input: document.getElementById('userInput'),
+                    suggestionBar: document.getElementById('suggestionBar'),
+                    suggestionText: document.getElementById('suggestionText'),
+                    tooltip: {
+                        el: document.getElementById('tooltip-portal'),
+                        content: document.querySelector('.tooltip-content')
+                    }
+                };
+
+                this.renderUI();
+                this.bindEvents();
+                this.setRole('expert'); 
+            },
+
+            renderUI() {
+                this.renderDropdown();
+                this.renderQuickSelect();
+                this.renderMegaGrid();
+            },
+
+            renderDropdown() {
+                this.dom.roleSelect.innerHTML = ROLES.map(r => 
+                    `<option value="${r.id}">${r.lbl}</option>`
+                ).join('');
+            },
+
+            renderQuickSelect() {
+                const favorites = ROLES.filter(r => r.fav);
+                this.dom.quickSelect.innerHTML = ''; // Clear
+
+                favorites.forEach(r => {
+                    const btn = document.createElement('button');
+                    btn.className = `fav-chip ${this.state.roleId === r.id ? 'active' : ''}`;
+                    btn.innerHTML = `<i class="fa-solid fa-star"></i> ${r.lbl}`;
+                    btn.onclick = () => this.setRole(r.id);
+                    btn.dataset.role = r.id;
+                    this.dom.quickSelect.appendChild(btn);
+                });
+            },
+
+            renderMegaGrid() {
+                const term = this.state.searchTerm.toLowerCase();
+                
+                const filteredRoles = ROLES.filter(r => 
+                    r.lbl.toLowerCase().includes(term) || 
+                    r.vi.toLowerCase().includes(term) ||
+                    r.cat.toLowerCase().includes(term)
+                );
+
+                const groups = {};
+                filteredRoles.forEach(r => {
+                    if(!groups[r.cat]) groups[r.cat] = [];
+                    groups[r.cat].push(r);
+                });
+
+                if (filteredRoles.length === 0) {
+                    this.dom.megaGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No roles found matching "${this.state.searchTerm}"</div>`;
+                    return;
+                }
+
+                let gridHtml = '';
+                for(const [cat, list] of Object.entries(groups)) {
+                    gridHtml += `<div class="col-span-full mt-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1">${cat}</div>`;
+                    list.forEach(r => {
+                        const starClass = r.fav ? 'is-fav fa-solid' : 'fa-regular';
+                        const cardClass = r.id === this.state.roleId ? 'border-blue-500 bg-blue-500/10' : '';
+                        
+                        gridHtml += `
+                            <div class="role-grid-card ${cardClass}" onclick="App.setRole('${r.id}'); App.toggleMega(false)">
+                                <h4>${r.lbl}</h4>
+                                <p>${r.vi}</p>
+                                <button class="card-star has-hint ${r.fav ? 'is-fav' : ''}" 
+                                        data-tooltip="fav_btn"
+                                        onclick="App.toggleFav(event, '${r.id}')">
+                                    <i class="${starClass} fa-star"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                }
+                this.dom.megaGrid.innerHTML = gridHtml;
+            },
+
+            bindEvents() {
+                this.dom.roleSelect.addEventListener('change', (e) => this.setRole(e.target.value));
+                this.dom.roleSearch.addEventListener('input', (e) => {
+                    this.state.searchTerm = e.target.value;
+                    this.renderMegaGrid();
+                });
+
+                // --- DOUBLE TAB LISTENER ---
+                this.dom.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        e.preventDefault(); // Prevent focus loss
+                        
+                        const currentTime = new Date().getTime();
+                        const gap = currentTime - this.state.lastTabTime;
+                        
+                        if (gap < 300 && gap > 0) {
+                            // Double Tab Detected
+                            this.autoFillExample();
+                            this.state.lastTabTime = 0; // Reset
+                        } else {
+                            this.state.lastTabTime = currentTime;
+                        }
+                    }
+                });
+                
+                // Show hint if empty on input change
+                this.dom.input.addEventListener('input', (e) => {
+                    if(e.target.value.trim() === '') {
+                        this.dom.suggestionBar.classList.remove('hidden');
+                    } else {
+                        this.dom.suggestionBar.classList.add('hidden');
+                    }
+                });
+
+                // Suggestion bar click to fill
+                this.dom.suggestionBar.addEventListener('click', () => this.autoFillExample());
+
+                // Standard bindings...
+                document.getElementById('btnOpenAll').addEventListener('click', () => this.toggleMega(true));
+                document.getElementById('closeMega').addEventListener('click', () => this.toggleMega(false));
+                this.dom.megaModal.addEventListener('click', (e) => {
+                    if(e.target === this.dom.megaModal) this.toggleMega(false);
+                });
+
+                document.getElementById('btnAnalyze').addEventListener('click', () => this.analyze());
+                document.getElementById('btnBack').addEventListener('click', () => this.switchView('idle'));
+                document.getElementById('btnCopy').addEventListener('click', () => {
+                    this.dom.output.select();
+                    document.execCommand('copy');
+                    alert('Copied to clipboard!');
+                });
+
+                document.body.addEventListener('mouseover', (e) => {
+                    const target = e.target.closest('[data-tooltip]');
+                    if (target) this.showTooltip(target, target.dataset.tooltip);
+                });
+                document.body.addEventListener('mouseout', (e) => {
+                    if (e.target.closest('[data-tooltip]')) this.hideTooltip();
+                });
+            },
+
+            setRole(id) {
+                this.state.roleId = id;
+                this.dom.roleSelect.value = id;
+                
+                const buttons = this.dom.quickSelect.querySelectorAll('.fav-chip');
+                buttons.forEach(btn => {
+                    if (btn.dataset.role === id) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+
+                const role = ROLES.find(r => r.id === id);
+                if (role) {
+                    this.dom.infoBox.classList.remove('hidden');
+                    this.dom.infoDesc.textContent = role.desc;
+                    this.dom.infoExp.textContent = role.cat;
+                    
+                    // Update Suggestion Bar
+                    this.dom.suggestionText.textContent = role.example || 'No example available.';
+                    if(this.dom.input.value.trim() === '') {
+                        this.dom.suggestionBar.classList.remove('hidden');
+                    }
+                }
+            },
+
+            autoFillExample() {
+                const role = ROLES.find(r => r.id === this.state.roleId);
+                if (role && role.example) {
+                    this.dom.input.value = role.example;
+                    this.dom.suggestionBar.classList.add('hidden');
+                    
+                    // Visual feedback
+                    this.dom.input.classList.add('ring-2', 'ring-blue-500');
+                    setTimeout(() => this.dom.input.classList.remove('ring-2', 'ring-blue-500'), 300);
+                }
+            },
+
+            toggleFav(e, id) {
+                e.stopPropagation();
+                const role = ROLES.find(r => r.id === id);
+                if(role) {
+                    role.fav = !role.fav;
+                    this.renderMegaGrid();
+                    this.renderQuickSelect();
+                }
+            },
+
+            toggleMega(show) {
+                if(show) {
+                    this.dom.megaModal.classList.add('open');
+                    this.dom.roleSearch.focus();
+                } else {
+                    this.dom.megaModal.classList.remove('open');
+                }
+            },
+
+            showTooltip(el, key) {
+                const text = TOOLTIPS_VI[key];
+                if (!text) return;
+                
+                const { tooltip } = this.dom;
+                tooltip.content.innerHTML = `
+                    <div class="tooltip-header">
+                        <i class="fa-solid fa-language text-emerald-400"></i> Vietnamese Explanation
+                    </div>
+                    ${text}
+                `;
+                
+                const rect = el.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                let topPos = rect.bottom + 8;
+                if (spaceBelow < 100) {
+                     topPos = rect.top - tooltip.content.offsetHeight - 8;
+                }
+
+                tooltip.el.style.top = `${topPos}px`;
+                tooltip.el.style.left = `${rect.left}px`;
+                tooltip.el.style.opacity = '1';
+                tooltip.el.style.transform = 'translateY(0)';
+            },
+
+            hideTooltip() {
+                const { tooltip } = this.dom;
+                tooltip.el.style.opacity = '0';
+                tooltip.el.style.transform = 'translateY(4px)';
+            },
+
+            analyze() {
+                const input = this.dom.input.value.trim();
+                if (!input) return alert('Vui lòng nhập yêu cầu!');
+                this.state.input = input;
+
+                const strategies = getStrategiesForRole(this.state.roleId);
+                const role = ROLES.find(r => r.id === this.state.roleId);
+
+                document.getElementById('strategyRoleLabel').textContent = role.lbl;
+                
+                this.dom.stratContainer.innerHTML = strategies.map((s, idx) => `
+                    <div onclick="App.generate('${idx}')" class="glass-panel p-5 rounded-xl cursor-pointer hover:bg-slate-800/50 transition group border-l-4 border-transparent hover:border-blue-500">
+                        <div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <i class="fa-solid ${s.icon} text-blue-400"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-sm mb-1">${s.title}</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-2">${s.desc}</p>
+                    </div>
+                `).join('');
+
+                this.currentStrategies = strategies;
+                this.switchView('strategy');
+            },
+
+            generate(idx) {
+                const strategy = this.currentStrategies[idx];
+                const role = ROLES.find(r => r.id === this.state.roleId);
+                
+                const mockTranslation = `
+[Intent Detection]: User wants to implement specific functionality.
+[Original VN]: "${this.state.input}"
+[Target English Context]: The user requests a solution for the described feature, focusing on ${strategy.title}.
+`.trim();
+
+                const finalPrompt = `
+You are an expert ${role.lbl} (${role.desc})
+
+CONTEXT STRATEGY: ${strategy.title}
+${strategy.promptMod}
+
+USER REQUEST (TRANSLATED CONTEXT):
+"""
+${mockTranslation}
+"""
+
+---
+CRITICAL INSTRUCTIONS FOR ONE-SHOT GENERATION:
+1.  **NO FOLLOW-UP MEMORY:** Treat this as a single-turn request. Provide the COMPLETE solution now.
+2.  **SINGLE FILE MANDATE:** If generating code, output a SINGLE self-contained file (e.g., index.html or PlayerController.cs) using standard markdown code blocks.
+3.  **NO HALLUCINATIONS:** Verify libraries exist.
+4.  **ROBUSTNESS:** Include error handling and comments explaining *why* you chose this approach.
+
+OUTPUT FORMAT:
+- Brief Architectural Decision (Why this approach?)
+- The Complete Code Block
+- Integration/Usage Notes
+`.trim();
+
+                this.dom.output.value = finalPrompt;
+                this.switchView('result');
+            },
+
+            switchView(name) {
+                Object.values(this.dom.views).forEach(el => {
+                    el.classList.add('hidden');
+                    el.classList.remove('fade-enter-active');
+                });
+                const target = this.dom.views[name];
+                target.classList.remove('hidden');
+                void target.offsetWidth; 
+                target.classList.add('fade-enter-active');
+            }
+        };
+
+        // Init
+        window.App = App;
+        document.addEventListener('DOMContentLoaded', () => App.init());
+    </script>
+</body>
+</html>
