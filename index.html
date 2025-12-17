@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Canvas Prompt Architect v5.2</title>
+    <title>Gemini Canvas Prompt Architect v8.3 (Data Enhanced)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap');
         
         :root {
             --bg-dark: #0f172a;
@@ -24,6 +24,7 @@
         }
 
         .font-code { font-family: 'JetBrains Mono', monospace; }
+        .font-serif { font-family: 'Merriweather', serif; }
 
         .glass-panel {
             background: var(--panel-bg);
@@ -50,14 +51,14 @@
         .all-chip { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #34d399; }
         .all-chip:hover { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); }
 
-        /* MEGA MODAL */
-        #mega-modal {
+        /* MODALS */
+        .modal-overlay {
             position: fixed; inset: 0; z-index: 50;
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px);
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.2s;
         }
-        #mega-modal.open { opacity: 1; pointer-events: auto; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
         
         .role-grid-card {
             position: relative;
@@ -68,37 +69,40 @@
         .role-grid-card h4 { font-weight: 600; color: #f1f5f9; font-size: 0.85rem; padding-right: 20px; }
         .role-grid-card p { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
 
-        /* Star Button in Card */
+        /* Star Button */
         .card-star-btn {
-            position: absolute; top: 8px; right: 8px;
-            width: 24px; height: 24px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-            color: #475569; transition: all 0.2s;
-            z-index: 10;
+            position: absolute; top: 8px; right: 8px; width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center; border-radius: 50%;
+            color: #475569; transition: all 0.2s; z-index: 10;
         }
         .card-star-btn:hover { background: rgba(255,255,255,0.1); color: #fbbf24; }
         .card-star-btn.is-fav { color: #fbbf24; }
-        .card-star-btn i { font-size: 0.8rem; }
+        .card-delete-btn { position: absolute; bottom: 8px; right: 8px; color: #ef4444; opacity: 0; transition: opacity 0.2s; }
+        .role-grid-card:hover .card-delete-btn { opacity: 1; }
 
-        /* TOOLTIP SYSTEM */
-        #tooltip-portal { 
-            position: fixed; z-index: 9999; pointer-events: none; opacity: 0; 
-            transition: opacity 0.15s, transform 0.15s; transform: translateY(4px); max-width: 320px; 
+        /* History Item */
+        .history-item {
+            background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;
+            display: flex; justify-content: space-between; align-items: start;
         }
-        .tooltip-content { 
-            background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #e2e8f0; 
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.8);
-            line-height: 1.5;
+        .history-item:hover { background: rgba(30, 41, 59, 0.8); border-color: #3b82f6; }
+        
+        /* SAMPLE LIST ITEM */
+        .sample-item {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: flex-start; gap: 10px;
         }
-        .tooltip-header {
-            color: #60a5fa; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; 
-            margin-bottom: 4px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;
-        }
+        .sample-item:hover { background: rgba(30, 41, 59, 0.8); border-color: #3b82f6; transform: translateX(4px); }
+        .sample-icon { color: #3b82f6; margin-top: 3px; font-size: 0.9rem; }
+        
+        /* TOOLTIP */
+        #tooltip-portal { position: fixed; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.15s, transform 0.15s; transform: translateY(4px); max-width: 320px; }
+        .tooltip-content { background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #e2e8f0; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.8); line-height: 1.5; }
+        .tooltip-header { color: #60a5fa; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
         .has-hint { cursor: help; border-bottom: 1px dashed rgba(148, 163, 184, 0.4); }
 
-        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -107,553 +111,558 @@
 </head>
 <body class="h-screen w-screen flex items-center justify-center p-4 lg:p-8 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
 
-    <!-- MEGA MODAL -->
-    <div id="mega-modal">
+    <!-- MEGA MODAL & OTHERS (Hidden by default) -->
+    <div id="mega-modal" class="modal-overlay">
         <div class="bg-[#0f172a] w-[95%] max-w-6xl h-[90vh] rounded-xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden transform scale-100 transition-transform duration-200">
-            <!-- Modal Header -->
             <div class="p-4 border-b border-slate-800 bg-slate-900 flex flex-col gap-4">
                 <div class="flex justify-between items-start">
                     <div>
                         <h2 class="text-lg font-bold text-white flex items-center gap-2 has-hint" data-tooltip="lib_title">
                             <i class="fa-solid fa-address-book text-blue-500"></i> Persona Library
                         </h2>
-                        <p class="text-xs text-slate-500">Search and manage your favorite AI roles.</p>
+                        <p class="text-xs text-slate-500">Search, manage, or create your own AI roles.</p>
                     </div>
-                    <button id="closeMega" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="flex gap-2">
+                         <button id="btnCreateRole" class="px-3 py-1.5 rounded text-xs font-bold bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600 hover:text-white transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Create Custom Role
+                        </button>
+                        <button id="closeMega" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                 </div>
-
-                <!-- Search Bar -->
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-xs"></i>
                     <input type="text" id="megaSearch" 
                         class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-9 pr-4 text-sm text-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none placeholder-slate-600 has-hint"
                         data-tooltip="lib_search"
-                        placeholder="Search roles (e.g., 'Unity', 'Security', 'Frontend')...">
+                        placeholder="Search roles (e.g., 'Cocos', 'Unity', 'Product', 'Marketing')...">
                 </div>
             </div>
-
-            <!-- Modal Body (Grid) -->
             <div class="flex-grow overflow-y-auto p-6 custom-scrollbar bg-[#0b1120]">
-                <div id="mega-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    <!-- Injected by JS -->
-                </div>
+                <div id="mega-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
             </div>
         </div>
     </div>
 
-    <!-- TOOLTIP PORTAL -->
+    <div id="create-role-modal" class="modal-overlay">
+        <div class="bg-[#1e293b] w-[90%] max-w-md rounded-xl border border-slate-600 shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Create Custom Role</h3>
+            <form id="createRoleForm" class="space-y-4">
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Role Name (English)</label><input type="text" id="crNameEn" required class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white outline-none"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Role Name (Vietnamese)</label><input type="text" id="crNameVi" required class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white outline-none"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Category</label>
+                    <select id="crCat" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white outline-none">
+                        <option value="Game Dev">Game Dev</option>
+                        <option value="Web">Web</option>
+                        <option value="Data">Data</option>
+                        <option value="Product">Product (New)</option>
+                        <option value="Marketing">Marketing (New)</option>
+                        <option value="Career">Career</option>
+                        <option value="Creative">Creative</option>
+                        <option value="Infra">Infra</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Description</label><textarea id="crDesc" required class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white outline-none h-20"></textarea></div>
+                <div class="flex justify-end gap-2 mt-4"><button type="button" id="btnCancelCreate" class="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white">Cancel</button><button type="submit" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-500">Save Role</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="history-modal" class="modal-overlay">
+        <div class="bg-[#0f172a] w-[90%] max-w-4xl h-[80vh] rounded-xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden transform scale-100 transition-transform duration-200">
+            <div class="p-4 border-b border-slate-800 bg-slate-900 flex justify-between items-center">
+                <div><h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-purple-500"></i> Prompt History</h2><p class="text-xs text-slate-500">Local Audit Log.</p></div>
+                <div class="flex gap-2"><button id="btnExportHistory" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"><i class="fa-solid fa-download mr-1"></i> JSON</button><button id="btnCloseHistory" class="w-8 h-8 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button></div>
+            </div>
+            <div class="flex-grow overflow-y-auto p-4 custom-scrollbar bg-[#0b1120]" id="history-list"></div>
+            <div class="p-3 border-t border-slate-800 bg-slate-900 flex justify-center"><button id="btnClearHistory" class="text-xs text-red-400 hover:text-red-300">Clear All History</button></div>
+        </div>
+    </div>
+
     <div id="tooltip-portal"><div class="tooltip-content"></div></div>
 
     <div class="w-full max-w-7xl h-[92vh] grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- LEFT PANEL: CONFIGURATION -->
+        <!-- LEFT PANEL -->
         <div class="col-span-1 lg:col-span-4 glass-panel rounded-2xl p-6 flex flex-col h-full relative overflow-hidden">
-            <header class="mb-5 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                    <i class="fa-solid fa-microchip"></i>
+            <header class="mb-5 flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-server text-white"></i></div>
+                    <div><h1 class="text-lg font-bold text-white tracking-tight has-hint" data-tooltip="app_title">Prompt Architect</h1><p class="text-[10px] text-slate-400 font-mono">v8.3 | Data Enhanced</p></div>
                 </div>
-                <div>
-                    <h1 class="text-lg font-bold text-white tracking-tight has-hint" data-tooltip="app_title">Prompt Architect</h1>
-                    <p class="text-[10px] text-slate-400 font-mono">v5.2 | Anti-Lazy Code</p>
-                </div>
+                <button id="btnOpenHistory" class="text-slate-400 hover:text-white transition p-2 has-hint" data-tooltip="history_btn"><i class="fa-solid fa-clock-rotate-left"></i></button>
             </header>
 
             <form id="inputForm" class="flex-grow flex flex-col gap-5 z-10">
-                
-                <!-- PERSONA SELECTOR -->
                 <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="target_persona">Target Persona</label>
-                    </div>
-                    
-                    <!-- Quick Select -->
-                    <div class="flex flex-wrap gap-2" id="quickSelectBar">
-                        <!-- Favs injected here -->
-                        <button type="button" id="btnOpenAll" class="fav-chip all-chip has-hint" data-tooltip="all_targets">
-                            <i class="fa-solid fa-grid-2"></i> All Targets
-                        </button>
-                    </div>
-
-                    <!-- Dropdown -->
+                    <div class="flex justify-between items-center"><label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="target_persona">Target Persona</label></div>
+                    <div class="flex flex-wrap gap-2" id="quickSelectBar"><button type="button" id="btnOpenAll" class="fav-chip all-chip has-hint" data-tooltip="all_targets"><i class="fa-solid fa-grid-2"></i> All Targets</button></div>
                     <div class="relative group">
-                        <select id="roleSelect" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg py-3 pl-3 pr-8 text-xs text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-800 transition font-mono">
-                            <!-- Options injected -->
-                        </select>
+                        <select id="roleSelect" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg py-3 pl-3 pr-8 text-xs text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-800 transition font-mono"></select>
                         <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-slate-500 pointer-events-none"></i>
                     </div>
-
-                    <!-- Dynamic Info Box -->
                     <div id="personaInfoBox" class="bg-slate-900/50 border-l-2 border-blue-500 p-3 rounded-r text-xs text-slate-400 hidden">
                         <p id="infoDesc" class="mb-1 leading-relaxed">...</p>
-                        <div class="flex gap-2 mt-2">
-                            <span class="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px]">Expertise: <b id="infoExpertise">...</b></span>
-                        </div>
+                        <div class="flex gap-2 mt-2"><span class="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px]">Expertise: <b id="infoExpertise">...</b></span></div>
                     </div>
                 </div>
-
-                <!-- INPUT AREA -->
                 <div class="space-y-2 flex-grow flex flex-col">
                     <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider has-hint" data-tooltip="raw_input">Requirements (Vietnamese)</label>
-                    <textarea id="userInput" class="w-full flex-grow bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none resize-none font-code leading-relaxed placeholder-slate-600 transition focus:bg-slate-900" 
-                    placeholder="Mô tả tính năng bạn muốn làm..."></textarea>
+                    <textarea id="userInput" class="w-full flex-grow bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:ring-1 focus:ring-blue-500 outline-none resize-none font-code leading-relaxed placeholder-slate-600 transition focus:bg-slate-900" placeholder="Dán code script và mô tả lỗi tại đây..."></textarea>
                 </div>
             </form>
 
             <div class="mt-4 z-10">
-                <button id="btnAnalyze" class="w-full btn-hover bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all has-hint" data-tooltip="btn_analyze">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Generate & Translate</span>
-                </button>
+                <button id="btnAnalyze" class="w-full btn-hover bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all has-hint" data-tooltip="btn_analyze"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Generate Structure</span></button>
             </div>
-            
-            <!-- Decor -->
             <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] pointer-events-none"></div>
         </div>
 
-        <!-- RIGHT PANEL: CONTEXTUAL OUTPUT -->
+        <!-- RIGHT PANEL (Dynamic List) -->
         <div class="col-span-1 lg:col-span-8 h-full relative">
             
-            <!-- IDLE VIEW -->
-            <div id="viewIdle" class="absolute inset-0 flex flex-col items-center justify-center glass-panel rounded-2xl border-dashed border-2 border-slate-700/50 p-8 text-center">
-                <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-layer-group text-3xl text-slate-600"></i>
+            <!-- LIST OF SAMPLES VIEW -->
+            <div id="viewIdle" class="absolute inset-0 flex flex-col glass-panel rounded-2xl border-dashed border-2 border-slate-700/50 overflow-hidden">
+                <div class="p-6 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center shadow-lg"><i class="fa-solid fa-lightbulb text-yellow-500 animate-pulse"></i></div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-300">Suggested Prompts</h3>
+                            <p class="text-slate-500 text-xs">Select a sample below to populate the request field.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-3" id="sampleListContainer">
+                        <!-- Samples injected here -->
+                    </div>
                 </div>
-                <h3 class="text-lg font-bold text-slate-300">Context-Aware Generation</h3>
-                <p class="text-slate-500 text-sm mt-2 max-w-md">
-                    Select a persona and describe your task. <br>
-                    Add favorites in the <b>Library</b> for quick access.
-                </p>
             </div>
 
-            <!-- STRATEGY VIEW -->
             <div id="viewStrategy" class="hidden absolute inset-0 glass-panel rounded-2xl p-8 flex flex-col fade-enter-active">
                 <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-chess-knight text-emerald-400"></i> Dynamic Strategy
-                        </h2>
-                        <p class="text-slate-400 text-xs mt-1">
-                            Strategies tailored for: <span id="strategyRoleLabel" class="text-blue-400 font-mono">...</span>
-                        </p>
-                    </div>
+                    <div><h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chess-knight text-emerald-400"></i> Dynamic Strategy</h2><p class="text-slate-400 text-xs mt-1">Strategies tailored for: <span id="strategyRoleLabel" class="text-blue-400 font-mono">...</span></p></div>
                     <button id="btnBack" class="text-slate-500 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow content-start" id="strategyContainer">
-                    <!-- Dynamic Strategies -->
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 flex-grow content-start" id="strategyContainer"></div>
             </div>
 
-            <!-- RESULT VIEW -->
             <div id="viewResult" class="hidden absolute inset-0 glass-panel rounded-2xl flex flex-col fade-enter-active overflow-hidden">
                 <div class="bg-slate-900/80 border-b border-slate-700 p-4 flex justify-between items-center backdrop-blur">
-                    <div class="flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-mono text-emerald-400">final_prompt.md</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="btnCopy" class="px-3 py-1.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-2">
-                            <i class="fa-regular fa-copy"></i> Copy Prompt
-                        </button>
-                    </div>
+                    <div class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-xs font-mono text-emerald-400">final_prompt.md</span></div>
+                    <div class="flex gap-2"><button id="btnCopy" class="px-3 py-1.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-2"><i class="fa-regular fa-copy"></i> Copy Prompt</button></div>
                 </div>
-                <div class="relative flex-grow bg-[#0b1120]">
-                    <textarea id="outputArea" readonly class="w-full h-full bg-transparent p-6 text-xs font-code text-slate-300 resize-none outline-none leading-relaxed custom-scrollbar"></textarea>
-                </div>
+                <div class="relative flex-grow bg-[#0b1120]"><textarea id="outputArea" readonly class="w-full h-full bg-transparent p-6 text-xs font-code text-slate-300 resize-none outline-none leading-relaxed custom-scrollbar"></textarea></div>
             </div>
-
         </div>
     </div>
 
-    <!-- LOGIC -->
     <script>
-        /** --- 1. MASSIVE DATA LAYER (Mutable State) --- **/
-        const ROLES = [
-            // CORE
-            { id: 'expert', cat: 'Core', lbl: 'Senior Software Engineer', vi: 'Kỹ sư phần mềm cao cấp', desc: 'Generalist expert. Clean code & patterns.', fav: true },
-            { id: 'architect', cat: 'Core', lbl: 'System Architect', vi: 'Kiến trúc sư hệ thống', desc: 'Focus on scalability, microservices, and high-level design.', fav: true },
-            { id: 'algo', cat: 'Core', lbl: 'Algorithm Specialist', vi: 'Chuyên gia Thuật toán', desc: 'Optimization, Big O, Data Structures.', fav: false },
+        /** --- 1. DATA LAYER --- **/
+        const DEFAULT_ROLES = [
+            // --- PRODUCT MANAGEMENT (NEW) ---
+            {
+                id: 'product_manager', cat: 'Product', lbl: 'Product Manager', vi: 'Giám đốc sản phẩm (PM)',
+                desc: 'Chuyên viết PRD, User Stories, Roadmap và phân tích tính năng.', fav: true,
+                samples: [
+                    "Viết một PRD (Product Requirement Document) cho tính năng 'Ví điện tử' trong app đặt xe.",
+                    "Tạo danh sách User Stories cho dự án E-commerce theo chuẩn INVEST.",
+                    "Lên kế hoạch Roadmap 3 tháng để ra mắt tính năng Livestream bán hàng.",
+                    "Phân tích SWOT cho ứng dụng học tiếng Anh mới trên thị trường Việt Nam.",
+                    "Viết kịch bản A/B Testing để tối ưu tỷ lệ chuyển đổi tại trang thanh toán."
+                ]
+            },
+            
+            // --- MARKETING (NEW) ---
+            {
+                id: 'growth_marketer', cat: 'Marketing', lbl: 'Growth Marketer', vi: 'Chuyên gia Marketing',
+                desc: 'Tối ưu nội dung SEO, Email Marketing, Quảng cáo và Tăng trưởng.', fav: true,
+                samples: [
+                    "Viết nội dung Landing Page cho khóa học lập trình, sử dụng mô hình AIDA.",
+                    "Gợi ý 10 tiêu đề bài viết Blog chuẩn SEO về chủ đề 'AI trong Marketing'.",
+                    "Soạn chuỗi 3 email (Cold Email) gửi khách hàng B2B để giới thiệu phần mềm quản lý kho.",
+                    "Viết kịch bản Video ngắn (TikTok/Reels) quảng bá ứng dụng tài chính cho Gen Z.",
+                    "Tối ưu lại đoạn mô tả sản phẩm này trên Shopee để tăng tỷ lệ click: [Paste text]."
+                ]
+            },
 
-            // GAME DEV
-            { id: 'unity_gp', cat: 'Game Dev', lbl: 'Unity Gameplay', vi: 'Lập trình Gameplay Unity', desc: 'C#, Monobehaviour, Game Loop logic.', fav: true },
-            { id: 'unity_dots', cat: 'Game Dev', lbl: 'Unity DOTS/Performance', vi: 'Tối ưu hiệu năng Unity', desc: 'ECS, Jobs System, Memory management.', fav: false },
-            { id: 'unity_shader', cat: 'Game Dev', lbl: 'Tech Artist (Shader)', vi: 'Kỹ thuật Shader/VFX', desc: 'HLSL, Shader Graph, GPU optimization.', fav: false },
-            { id: 'unreal_cpp', cat: 'Game Dev', lbl: 'Unreal C++ Engineer', vi: 'Kỹ sư Unreal C++', desc: 'UE5, Blueprints to C++, Networking.', fav: false },
-            { id: 'godot', cat: 'Game Dev', lbl: 'Godot Developer', vi: 'Lập trình viên Godot', desc: 'GDScript, 2D/3D indie development.', fav: false },
+            // --- INFRA / TOOLING (NEW) ---
+            {
+                id: 'rust_eng', cat: 'Core', lbl: 'Rust Systems Engineer', vi: 'Kỹ sư hệ thống Rust',
+                desc: 'Chuyên gia về an toàn bộ nhớ (Memory Safety), Concurrency và Systems Programming.', fav: false,
+                samples: [
+                    "Viết lại module quản lý bộ nhớ này từ C++ sang Rust, đảm bảo an toàn về ownership.",
+                    "Xây dựng một Web Server đơn giản sử dụng framework Actix-web hoặc Axum.",
+                    "Giải thích khái niệm 'Borrow Checker' trong Rust cho người mới bắt đầu.",
+                    "Viết script xử lý dữ liệu song song (Multi-threading) hiệu năng cao bằng Rust."
+                ]
+            },
+            {
+                id: 'qa_auto', cat: 'Infra', lbl: 'QA Automation Engineer', vi: 'Kỹ sư Kiểm thử Tự động',
+                desc: 'Viết kịch bản test tự động (Selenium, Cypress, Playwright).', fav: false,
+                samples: [
+                    "Viết kịch bản test E2E cho luồng Đăng nhập và Mua hàng sử dụng Cypress.",
+                    "Tạo bộ test API tự động bằng Postman hoặc Python Requests.",
+                    "Thiết lập pipeline CI/CD để chạy unit test tự động mỗi khi có Pull Request.",
+                    "Viết script kiểm thử tải (Load Testing) cho server bằng k6 hoặc JMeter."
+                ]
+            },
 
-            // WEB
-            { id: 'fe_react', cat: 'Web', lbl: 'React Specialist', vi: 'Chuyên gia ReactJS', desc: 'Hooks, State Management, Next.js.', fav: false },
-            { id: 'be_node', cat: 'Web', lbl: 'Node.js Backend', vi: 'Backend Node.js', desc: 'Express/NestJS, Microservices, MongoDB.', fav: false },
-            { id: 'be_go', cat: 'Web', lbl: 'Golang Engineer', vi: 'Kỹ sư Golang', desc: 'Concurrency, High throughput systems.', fav: false },
-            { id: 'fullstack', cat: 'Web', lbl: 'Fullstack Developer', vi: 'Lập trình Fullstack', desc: 'End-to-end web development.', fav: false },
+            // --- CAREER SUPPORT ---
+            { id: 'vn_interview_coach', cat: 'Career', lbl: 'VN Interview Coach', vi: 'Huấn luyện viên Phỏng vấn', desc: 'Luyện tập trả lời phỏng vấn, sửa lỗi diễn đạt.', fav: true, samples: ["Đóng vai HR phỏng vấn tôi vị trí Senior Dev.", "Gợi ý trả lời câu hỏi: 'Điểm yếu của bạn là gì?'.", "Review câu trả lời về conflict với đồng nghiệp."] },
+            { id: 'job_apply_assist', cat: 'Career', lbl: 'Job Application Assistant', vi: 'Trợ lý Ứng tuyển', desc: 'Viết Cover Letter, Email xin việc.', fav: false, samples: ["Viết Cover Letter ứng tuyển React Dev.", "Soạn email hỏi kết quả phỏng vấn.", "Viết thư cảm ơn sau phỏng vấn."] },
 
-            // DATA & AI
-            { id: 'ai_ml', cat: 'Data', lbl: 'AI/ML Engineer', vi: 'Kỹ sư AI/Machine Learning', desc: 'Python, PyTorch, Model integration.', fav: false },
-            { id: 'data_eng', cat: 'Data', lbl: 'Data Engineer', vi: 'Kỹ sư dữ liệu', desc: 'ETL Pipelines, Big Data, SQL optimization.', fav: false },
+            // --- LUNA & GAME DEV ---
+            { id: 'luna_opt', cat: 'Game Dev', lbl: 'Luna Playable Optimizer', vi: 'Tối ưu hóa Luna Playable', desc: 'Unity to HTML5 optimization.', fav: true, samples: ["Analyze Luna build log error.", "Optimize C# script for Luna (remove Threads).", "Refactor UI for <5MB build."] },
+            { id: 'unity_gp', cat: 'Game Dev', lbl: 'Unity Gameplay', vi: 'Lập trình Gameplay Unity', desc: 'C#, Monobehaviour.', fav: true, samples: ["Write Character Controller script.", "Implement Object Pool.", "Create FSM for Enemy AI."] },
 
-            // INFRA & SEC
-            { id: 'devops', cat: 'Infra', lbl: 'DevOps Engineer', vi: 'Kỹ sư DevOps', desc: 'CI/CD, Docker, Kubernetes, AWS.', fav: false },
-            { id: 'security', cat: 'Infra', lbl: 'Security Researcher', vi: 'Chuyên gia bảo mật', desc: 'Penetration testing, OWASP, Auditing.', fav: false },
-            { id: 'sre', cat: 'Infra', lbl: 'Site Reliability Eng', vi: 'Kỹ sư vận hành (SRE)', desc: 'Uptime, Monitoring, Incident response.', fav: false },
-
-            // MOBILE & EMBEDDED
-            { id: 'ios', cat: 'Mobile', lbl: 'iOS Engineer', vi: 'Lập trình iOS (Swift)', desc: 'SwiftUI, UIKit, Apple Ecosystem.', fav: false },
-            { id: 'android', cat: 'Mobile', lbl: 'Android Engineer', vi: 'Lập trình Android (Kotlin)', desc: 'Kotlin, Jetpack Compose.', fav: false },
-            { id: 'flutter', cat: 'Mobile', lbl: 'Flutter Developer', vi: 'Lập trình Flutter', desc: 'Cross-platform mobile apps.', fav: false },
-            { id: 'embedded', cat: 'Embedded', lbl: 'Embedded Systems Eng', vi: 'Kỹ sư nhúng', desc: 'C/C++, Firmware, Hardware interface.', fav: false }
+            // --- CODIFY & TECH ---
+            { id: 'codify_arch', cat: 'Codify', lbl: 'Codify Architect', vi: 'Kiến trúc sư Codify', desc: 'Idea to Specs.', fav: true, samples: ["Analyze vague request -> SRS.", "Draft PRD for Code Editor.", "System Architecture for gamification."] },
+            { id: 'expert', cat: 'Core', lbl: 'Senior Software Engineer', vi: 'Kỹ sư phần mềm cao cấp', desc: 'Clean code & patterns.', fav: true, samples: ["Refactor OrderManager.", "Review PR for leaks.", "Optimize SQL query."] },
+            { id: 'claude_opt', cat: 'Optimization', lbl: 'Claude Optimizer', vi: 'Tối ưu hóa Claude', desc: 'Token saving.', fav: true, samples: ["Silent Coder mode.", "Memory Compress.", "Surgical Diff."] },
+            
+            // --- EXISTING ROLES ---
+            { id: 'lyrical_poet', cat: 'Creative', lbl: 'Lyrical Poet', vi: 'Nhà thơ Trữ tình', desc: 'Sáng tác thơ ca.', fav: false, samples: ["Thơ lục bát mưa đêm.", "Thơ tự do tuổi trẻ."] },
+            { id: '2d_bg_artist', cat: 'Game Dev', lbl: '2D Background Artist', vi: 'Họa sĩ Bối cảnh 2D', desc: 'HD Environments.', fav: false, samples: ["Cyberpunk Street prompt.", "Fantasy Forest prompt."] },
+            { id: 'web_ts', cat: 'Web', lbl: 'TypeScript Expert', vi: 'Chuyên gia TypeScript', desc: 'Strict typing.', fav: false, samples: ["Fix 'any' types.", "Generic Repository pattern."] }
         ];
 
-        const TOOLTIPS_VI = {
-            'app_title': 'Công cụ tạo Prompt chuyên nghiệp cho AI Code.',
-            'target_persona': 'Vai trò AI: Chọn đúng vai trò sẽ giúp AI dùng đúng từ vựng chuyên ngành.',
-            'all_targets': 'Mở thư viện toàn bộ các vai trò. Có thể tìm kiếm và đánh dấu yêu thích.',
-            'raw_input': 'Nhập yêu cầu của bạn bằng tiếng Việt tự nhiên. Hệ thống sẽ tự dịch.',
-            'btn_analyze': 'Phân tích yêu cầu và đề xuất chiến lược phù hợp nhất với vai trò đã chọn.',
-            'lib_title': 'Thư viện Vai trò. Nơi bạn tìm kiếm và quản lý danh sách yêu thích.',
-            'lib_search': 'Nhập từ khóa để lọc danh sách. Ví dụ: "Web", "Game", "Unity"...'
+        let ALL_ROLES = [];
+        const TOOLTIPS_VI = { 'app_title': 'Công cụ Prompt.', 'target_persona': 'Chọn vai trò AI.', 'all_targets': 'Mở thư viện.', 'raw_input': 'Nhập yêu cầu.', 'btn_analyze': 'Tạo prompt.', 'lib_title': 'Thư viện.', 'lib_search': 'Tìm kiếm...', 'history_btn': 'Lịch sử.' };
+
+        const StorageManager = {
+            HISTORY_KEY: 'prompt_architect_history', ROLES_KEY: 'prompt_architect_custom_roles',
+            getHistory() { try { return JSON.parse(localStorage.getItem(this.HISTORY_KEY) || '[]'); } catch (e) { return []; } },
+            saveHistory(item) { const h = this.getHistory(); h.unshift(item); if (h.length > 50) h.pop(); try { localStorage.setItem(this.HISTORY_KEY, JSON.stringify(h)); } catch (e) {} },
+            clearHistory() { localStorage.removeItem(this.HISTORY_KEY); },
+            exportHistory() { const data = JSON.stringify(this.getHistory(), null, 2); const blob = new Blob([data], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `prompt_history.json`; a.click(); },
+            getCustomRoles() { try { return JSON.parse(localStorage.getItem(this.ROLES_KEY) || '[]'); } catch (e) { return []; } },
+            addCustomRole(role) { const roles = this.getCustomRoles(); roles.push(role); localStorage.setItem(this.ROLES_KEY, JSON.stringify(roles)); },
+            deleteCustomRole(id) { const roles = this.getCustomRoles().filter(r => r.id !== id); localStorage.setItem(this.ROLES_KEY, JSON.stringify(roles)); }
         };
 
-        /** --- 2. DYNAMIC STRATEGY ENGINE --- **/
         function getStrategiesForRole(roleId) {
-            const role = ROLES.find(r => r.id === roleId);
-            const cat = role ? role.cat : 'Core';
+            const role = ALL_ROLES.find(r => r.id === roleId) || DEFAULT_ROLES[0];
+            const cat = role.cat;
             const strategies = [];
+            
+            // NEW STRATEGIES FOR NEW CATEGORIES
+            if (cat === 'Product') {
+                return [
+                    { title: "Product Thinking", icon: "fa-lightbulb", desc: "User-centric & Metric-driven.", promptMod: "Adopt a Product Mindset. Focus on user value, feasibility, and business viability. Use metrics (KPIs, OKRs) to justify decisions." },
+                    { title: "Structured Specs", icon: "fa-list-check", desc: "Standard PRD/User Story format.", promptMod: "Output strictly in standard Product formats (PRD, User Stories with Acceptance Criteria). Ensure clarity for developers." },
+                    { title: "Roadmap Planning", icon: "fa-map", desc: "Timeline & Prioritization.", promptMod: "Focus on prioritization frameworks (RICE, MoSCoW). Create logical timelines and milestones." }
+                ];
+            }
 
-            strategies.push({
-                title: "Implementation Focus",
-                icon: "fa-code",
-                desc: "Code chính xác, chạy được ngay. Tối ưu cho task cụ thể.",
-                promptMod: "Focus strictly on implementation details, clean syntax, and functional correctness."
-            });
+            if (cat === 'Marketing') {
+                return [
+                    { title: "Persuasive Copy", icon: "fa-pen-nib", desc: "High conversion writing.", promptMod: "Use persuasive copywriting frameworks like AIDA (Attention, Interest, Desire, Action) or PAS (Problem, Agitation, Solution)." },
+                    { title: "SEO Optimization", icon: "fa-magnifying-glass-chart", desc: "Keyword rich & readable.", promptMod: "Optimize for Search Engines. Use relevant keywords naturally, structure with H1/H2/H3 tags, and focus on readability/engagement." },
+                    { title: "Brand Voice", icon: "fa-bullhorn", desc: "Consistent & targeted tone.", promptMod: "Maintain a consistent Brand Voice suitable for the target audience (e.g., Gen Z, B2B Professionals). Use appropriate slang or jargon." }
+                ];
+            }
 
-            if (cat === 'Game Dev') {
+            // CAREER STRATEGIES
+            if (cat === 'Career') {
+                return [
+                    { title: "STAR Method", icon: "fa-star", desc: "Situation - Task - Action - Result.", promptMod: "Structure all interview answers using the STAR method. Highlight specific metrics and achievements." },
+                    { title: "Professional Tone", icon: "fa-user-tie", desc: "Formal, polite, and confident.", promptMod: "Adopt a professional, polite, and confident tone suitable for business correspondence." },
+                    { title: "Roleplay Simulation", icon: "fa-masks-theater", desc: "Act as the interviewer.", promptMod: "Stay in character as the interviewer/recruiter. Do not break character." }
+                ];
+            }
+
+            if (cat === 'Creative') {
+                return [
+                    { title: "Emotional Depth", icon: "fa-heart", desc: "Focus on evoking feelings.", promptMod: "Focus deeply on emotional resonance. Use sensory details to immerse the reader." },
+                    { title: "Poetic Meter", icon: "fa-music", desc: "Strict adherence to structure.", promptMod: "Strictly follow the requested poetic meter and rhyme scheme." }
+                ];
+            }
+
+            if (roleId === 'claude_opt') {
+                return [
+                    { title: "Silent Coder", icon: "fa-comment-slash", desc: "Output code only.", promptMod: "CRITICAL: NO PREAMBLE. NO EXPLANATION. CODE ONLY." },
+                    { title: "Surgical Diff", icon: "fa-file-medical", desc: "Search/Replace format.", promptMod: "OUTPUT FORMAT: SEARCH/REPLACE BLOCK ONLY." },
+                    { title: "Memory Compress", icon: "fa-compress", desc: "Summarize context.", promptMod: "Summarize technical state for new session." }
+                ];
+            }
+
+            if (cat === 'Codify') {
+                return [
+                    { title: "Meta-Prompting", icon: "fa-brain", desc: "Generate prompts for other AIs.", promptMod: "Act as a Prompt Engineer. Output a structured System Prompt." },
+                    { title: "Full System Spec", icon: "fa-sitemap", desc: "Detailed requirements.", promptMod: "Generate a comprehensive technical specification (PRD/SRS)." }
+                ];
+            }
+
+            strategies.push({ title: "Implementation Focus", icon: "fa-code", desc: "Clean code & logic.", promptMod: "Focus on implementation details." });
+            if (cat === 'Game Dev') strategies.push({ title: "Performance", icon: "fa-gauge-high", desc: "Optimize Memory/FPS.", promptMod: "Prioritize performance." });
+            
+            if (roleId === 'luna_opt') {
                 strategies.push({
-                    title: "Performance & Optimization",
-                    icon: "fa-gauge-high",
-                    desc: "Tối ưu FPS, Memory, Garbage Collection (Quan trọng cho Game).",
-                    promptMod: "Prioritize performance, memory management, and frame-rate optimization. Use object pooling and avoid garbage collection spikes."
-                });
-                strategies.push({
-                    title: "Scalable Game Architecture",
-                    icon: "fa-cubes-stacked",
-                    desc: "Thiết kế hệ thống Module, dễ mở rộng DLC/Feature.",
-                    promptMod: "Design a modular architecture suitable for game development (e.g., Component patterns, ScriptableObjects)."
-                });
-            } else if (cat === 'Infra' || roleId === 'security') {
-                strategies.push({
-                    title: "Zero-Trust Security",
-                    icon: "fa-shield-virus",
-                    desc: "Bảo mật tuyệt đối, Valid input, chống Injection.",
-                    promptMod: "Adopt a Zero-Trust security model. Validate all inputs, sanitize data, and follow OWASP best practices."
-                });
-            } else if (cat === 'Web') {
-                strategies.push({
-                    title: "Scalable Microservices",
-                    icon: "fa-network-wired",
-                    desc: "Thiết kế tách biệt, API Gateway, Database Sharding.",
-                    promptMod: "Design for horizontal scalability. Consider microservices boundaries, API versioning, and database consistency."
-                });
-            } else {
-                strategies.push({
-                    title: "Design Patterns & Arch",
-                    icon: "fa-sitemap",
-                    desc: "Áp dụng mẫu thiết kế chuẩn (Factory, Observer...).",
-                    promptMod: "Apply appropriate GoF Design Patterns. Ensure the code is loosely coupled and highly cohesive."
+                    title: "Luna 7.0 Constraints", icon: "fa-box-open",
+                    desc: "Strict adherence to Luna engine.",
+                    promptMod: "Strictly adhere to Luna Playable 7.0.0 limitations: No Multi-threading, No JIT compilation."
                 });
             }
 
-            strategies.push({
-                title: "Defensive Programming",
-                icon: "fa-bug-slash",
-                desc: "Xử lý mọi lỗi có thể xảy ra (Edge-cases).",
-                promptMod: "Focus on error handling, logging, and graceful degradation. Cover edge cases."
-            });
-
+            strategies.push({ title: "Defensive Coding", icon: "fa-bug-slash", desc: "Handle edge cases.", promptMod: "Focus on error handling." });
             return strategies.slice(0, 3);
         }
 
-        /** --- 3. CONTROLLER --- **/
         const App = {
             state: { roleId: 'expert', input: '', filter: '' },
-
             init() {
                 this.dom = {
-                    roleSelect: document.getElementById('roleSelect'),
-                    quickSelect: document.getElementById('quickSelectBar'),
-                    infoBox: document.getElementById('personaInfoBox'),
-                    infoDesc: document.getElementById('infoDesc'),
-                    infoExp: document.getElementById('infoExpertise'),
-                    megaModal: document.getElementById('mega-modal'),
-                    megaGrid: document.getElementById('mega-grid'),
-                    megaSearch: document.getElementById('megaSearch'),
-                    views: {
-                        idle: document.getElementById('viewIdle'),
-                        strategy: document.getElementById('viewStrategy'),
-                        result: document.getElementById('viewResult')
-                    },
-                    stratContainer: document.getElementById('strategyContainer'),
-                    output: document.getElementById('outputArea'),
-                    input: document.getElementById('userInput'),
-                    tooltip: {
-                        el: document.getElementById('tooltip-portal'),
-                        content: document.querySelector('.tooltip-content')
-                    }
+                    roleSelect: document.getElementById('roleSelect'), quickSelect: document.getElementById('quickSelectBar'),
+                    infoBox: document.getElementById('personaInfoBox'), infoDesc: document.getElementById('infoDesc'), infoExp: document.getElementById('infoExpertise'),
+                    megaModal: document.getElementById('mega-modal'), megaGrid: document.getElementById('mega-grid'), megaSearch: document.getElementById('megaSearch'),
+                    createRoleModal: document.getElementById('create-role-modal'), createRoleForm: document.getElementById('createRoleForm'),
+                    historyModal: document.getElementById('history-modal'), historyList: document.getElementById('history-list'),
+                    sampleList: document.getElementById('sampleListContainer'), input: document.getElementById('userInput'),
+                    views: { idle: document.getElementById('viewIdle'), strategy: document.getElementById('viewStrategy'), result: document.getElementById('viewResult') },
+                    stratContainer: document.getElementById('strategyContainer'), output: document.getElementById('outputArea'),
+                    tooltip: { el: document.getElementById('tooltip-portal'), content: document.querySelector('.tooltip-content') }
                 };
-
-                this.renderUI();
-                this.bindEvents();
-                this.setRole('expert');
+                this.loadRoles(); this.renderUI(); this.bindEvents(); this.setRole('product_manager'); // Set Product as default
             },
-
-            renderUI() {
-                this.renderDropdown();
-                this.renderQuickSelect();
-                this.renderMegaGrid();
-            },
-
-            renderDropdown() {
-                this.dom.roleSelect.innerHTML = ROLES.map(r => 
-                    `<option value="${r.id}">${r.lbl}</option>`
-                ).join('');
-            },
-
+            loadRoles() { const custom = StorageManager.getCustomRoles(); ALL_ROLES = [...DEFAULT_ROLES, ...custom]; },
+            renderUI() { this.dom.roleSelect.innerHTML = ALL_ROLES.map(r => `<option value="${r.id}">${r.lbl}</option>`).join(''); this.renderQuickSelect(); this.renderMegaGrid(); },
             renderQuickSelect() {
-                const favorites = ROLES.filter(r => r.fav);
-                const allBtn = document.getElementById('btnOpenAll');
-                
-                // Clear old favs
-                Array.from(this.dom.quickSelect.children).forEach(child => {
-                    if (child.id !== 'btnOpenAll') child.remove();
-                });
-
+                const favorites = ALL_ROLES.filter(r => r.fav); const allBtn = document.getElementById('btnOpenAll');
+                Array.from(this.dom.quickSelect.children).forEach(child => { if (child.id !== 'btnOpenAll') child.remove(); });
                 favorites.forEach(r => {
-                    const btn = document.createElement('button');
-                    btn.className = `fav-chip ${r.id === this.state.roleId ? 'active' : ''}`;
-                    btn.innerHTML = `<i class="fa-solid fa-star"></i> ${r.lbl}`;
-                    btn.onclick = () => this.setRole(r.id);
-                    btn.dataset.role = r.id; 
+                    const btn = document.createElement('button'); btn.className = `fav-chip ${r.id === this.state.roleId ? 'active' : ''}`;
+                    btn.innerHTML = `<i class="fa-solid fa-star"></i> ${r.lbl}`; btn.onclick = () => this.setRole(r.id); btn.dataset.role = r.id; 
                     this.dom.quickSelect.insertBefore(btn, allBtn);
                 });
             },
-
             renderMegaGrid() {
                 const filter = this.state.filter.toLowerCase();
-                const filteredRoles = ROLES.filter(r => 
-                    r.lbl.toLowerCase().includes(filter) || 
-                    r.vi.toLowerCase().includes(filter) || 
-                    r.desc.toLowerCase().includes(filter)
-                );
-
-                const groups = {};
-                filteredRoles.forEach(r => {
-                    if(!groups[r.cat]) groups[r.cat] = [];
-                    groups[r.cat].push(r);
-                });
-
+                const filteredRoles = ALL_ROLES.filter(r => r.lbl.toLowerCase().includes(filter) || r.vi.toLowerCase().includes(filter));
+                const groups = {}; filteredRoles.forEach(r => { if(!groups[r.cat]) groups[r.cat] = []; groups[r.cat].push(r); });
                 let gridHtml = '';
-                if (filteredRoles.length === 0) {
-                    gridHtml = `<div class="col-span-full text-center text-slate-500 mt-10">No roles found matching "${this.state.filter}"</div>`;
-                } else {
+                if (filteredRoles.length === 0) gridHtml = `<div class="col-span-full text-center text-slate-500 mt-10">No roles found</div>`;
+                else {
                     for(const [cat, list] of Object.entries(groups)) {
                         gridHtml += `<div class="col-span-full mt-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1">${cat}</div>`;
                         list.forEach(r => {
-                            gridHtml += `
-                                <div class="role-grid-card" onclick="App.setRole('${r.id}'); App.toggleMega(false)">
-                                    <div class="card-star-btn ${r.fav ? 'is-fav' : ''}" onclick="App.toggleFavorite('${r.id}', event)">
-                                        <i class="fa-${r.fav ? 'solid' : 'regular'} fa-star"></i>
-                                    </div>
-                                    <h4>${r.lbl}</h4>
-                                    <p>${r.vi}</p>
-                                </div>
-                            `;
+                            const isCustom = r.cat === 'Custom';
+                            gridHtml += `<div class="role-grid-card" onclick="App.setRole('${r.id}'); App.toggleModal(App.dom.megaModal, false)"><div class="card-star-btn ${r.fav ? 'is-fav' : ''}" onclick="App.toggleFavorite('${r.id}', event)"><i class="fa-${r.fav ? 'solid' : 'regular'} fa-star"></i></div>${isCustom ? `<div class="card-delete-btn" onclick="App.deleteRole('${r.id}', event)"><i class="fa-solid fa-trash"></i></div>` : ''}<h4 class="${isCustom ? 'text-emerald-400' : ''}">${r.lbl}</h4><p>${r.vi}</p></div>`;
                         });
                     }
                 }
                 this.dom.megaGrid.innerHTML = gridHtml;
             },
-
             bindEvents() {
                 this.dom.roleSelect.addEventListener('change', (e) => this.setRole(e.target.value));
-                document.getElementById('btnOpenAll').addEventListener('click', () => {
-                    this.state.filter = ''; // Reset filter on open
-                    this.dom.megaSearch.value = '';
-                    this.renderMegaGrid();
-                    this.toggleMega(true);
-                    setTimeout(() => this.dom.megaSearch.focus(), 100);
-                });
-                document.getElementById('closeMega').addEventListener('click', () => this.toggleMega(false));
-                this.dom.megaModal.addEventListener('click', (e) => {
-                    if(e.target === this.dom.megaModal) this.toggleMega(false);
-                });
-
-                // Search Listener
-                this.dom.megaSearch.addEventListener('keyup', (e) => {
-                    this.state.filter = e.target.value;
-                    this.renderMegaGrid();
-                });
-
+                document.getElementById('btnOpenAll').addEventListener('click', () => { this.state.filter = ''; this.dom.megaSearch.value = ''; this.renderMegaGrid(); this.toggleModal(this.dom.megaModal, true); setTimeout(() => this.dom.megaSearch.focus(), 100); });
+                document.getElementById('closeMega').addEventListener('click', () => this.toggleModal(this.dom.megaModal, false));
+                this.dom.megaSearch.addEventListener('keyup', (e) => { this.state.filter = e.target.value; this.renderMegaGrid(); });
+                document.getElementById('btnCreateRole').addEventListener('click', () => { this.toggleModal(this.dom.megaModal, false); this.toggleModal(this.dom.createRoleModal, true); });
+                document.getElementById('btnCancelCreate').addEventListener('click', () => { this.toggleModal(this.dom.createRoleModal, false); this.toggleModal(this.dom.megaModal, true); });
+                this.dom.createRoleForm.addEventListener('submit', (e) => { e.preventDefault(); this.createRole(); });
+                document.getElementById('btnOpenHistory').addEventListener('click', () => { this.renderHistory(); this.toggleModal(this.dom.historyModal, true); });
+                document.getElementById('btnCloseHistory').addEventListener('click', () => this.toggleModal(this.dom.historyModal, false));
+                document.getElementById('btnClearHistory').addEventListener('click', () => { if(confirm('Clear history?')) { StorageManager.clearHistory(); this.renderHistory(); }});
+                document.getElementById('btnExportHistory').addEventListener('click', () => StorageManager.exportHistory());
                 document.getElementById('btnAnalyze').addEventListener('click', () => this.analyze());
                 document.getElementById('btnBack').addEventListener('click', () => this.switchView('idle'));
-                document.getElementById('btnCopy').addEventListener('click', () => {
-                    this.dom.output.select();
-                    document.execCommand('copy');
-                    alert('Copied to clipboard!');
-                });
-
-                // Global Tooltip Delegation (Covers new elements)
-                document.body.addEventListener('mouseover', (e) => {
-                    const target = e.target.closest('[data-tooltip]');
-                    if (target) this.showTooltip(target, target.dataset.tooltip);
-                });
-                document.body.addEventListener('mouseout', (e) => {
-                    if (e.target.closest('[data-tooltip]')) this.hideTooltip();
-                });
+                document.getElementById('btnCopy').addEventListener('click', () => { this.dom.output.select(); document.execCommand('copy'); alert('Copied!'); });
+                document.body.addEventListener('mouseover', (e) => { const t = e.target.closest('[data-tooltip]'); if (t) this.showTooltip(t, t.dataset.tooltip); });
+                document.body.addEventListener('mouseout', (e) => { if (e.target.closest('[data-tooltip]')) this.hideTooltip(); });
             },
-
-            toggleFavorite(id, event) {
-                event.stopPropagation(); // Prevent selecting the role when clicking star
-                const role = ROLES.find(r => r.id === id);
-                if (role) {
-                    role.fav = !role.fav;
-                    this.renderMegaGrid(); // Update star icon state
-                    this.renderQuickSelect(); // Update top bar chips
-                }
+            createRole() {
+                const newRole = { id: 'custom_' + Date.now(), lbl: document.getElementById('crNameEn').value, vi: document.getElementById('crNameVi').value, cat: document.getElementById('crCat').value, desc: document.getElementById('crDesc').value, fav: true, samples: ["No samples yet."] };
+                StorageManager.addCustomRole(newRole); this.loadRoles(); this.renderUI(); this.setRole(newRole.id); this.toggleModal(this.dom.createRoleModal, false); this.dom.createRoleForm.reset();
             },
-
+            deleteRole(id, event) { event.stopPropagation(); if(confirm('Delete?')) { StorageManager.deleteCustomRole(id); this.loadRoles(); this.renderMegaGrid(); if (this.state.roleId === id) this.setRole('expert'); } },
+            renderHistory() {
+                const history = StorageManager.getHistory(); if (history.length === 0) { this.dom.historyList.innerHTML = '<div class="text-center text-slate-500 mt-10">No history found.</div>'; return; }
+                this.dom.historyList.innerHTML = history.map((item, idx) => `<div class="history-item cursor-pointer" onclick="App.loadHistoryItem(${idx})"><div><div class="text-xs text-blue-400 font-mono mb-1">${new Date(item.timestamp).toLocaleString()}</div><h4 class="text-slate-200 text-sm font-bold">${item.roleLabel} - ${item.strategyTitle}</h4><p class="text-slate-400 text-xs mt-1 line-clamp-2">${item.input}</p></div><i class="fa-solid fa-chevron-right text-slate-600 mt-2"></i></div>`).join('');
+            },
+            loadHistoryItem(idx) {
+                const item = StorageManager.getHistory()[idx]; if (!item) return;
+                if (ALL_ROLES.find(r => r.id === item.roleId)) this.setRole(item.roleId); else this.setRole('expert');
+                this.state.input = item.input; this.dom.input.value = item.input; this.dom.output.value = item.prompt; this.toggleModal(this.dom.historyModal, false); this.switchView('result');
+            },
+            toggleFavorite(id, event) { event.stopPropagation(); const role = ALL_ROLES.find(r => r.id === id); if (role) { role.fav = !role.fav; this.renderMegaGrid(); this.renderQuickSelect(); } },
             setRole(id) {
-                this.state.roleId = id;
-                this.dom.roleSelect.value = id;
-                
-                // Update Quick Select Active State
-                Array.from(this.dom.quickSelect.children).forEach(btn => {
-                    if (btn.dataset.role === id) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                });
-
-                // Update Info Box
-                const role = ROLES.find(r => r.id === id);
+                this.state.roleId = id; this.dom.roleSelect.value = id;
+                Array.from(this.dom.quickSelect.children).forEach(btn => { if (btn.dataset.role === id) btn.classList.add('active'); else btn.classList.remove('active'); });
+                const role = ALL_ROLES.find(r => r.id === id);
                 if (role) {
-                    this.dom.infoBox.classList.remove('hidden');
-                    this.dom.infoDesc.textContent = role.desc;
-                    this.dom.infoExp.textContent = role.cat;
+                    this.dom.infoBox.classList.remove('hidden'); this.dom.infoDesc.textContent = role.desc; this.dom.infoExp.textContent = role.cat;
+                    const samples = role.samples || ["No samples available."];
+                    this.dom.sampleList.innerHTML = samples.map(s => `
+                        <div class="sample-item" onclick="App.useSample(this)">
+                            <div class="sample-icon"><i class="fa-solid fa-quote-left"></i></div>
+                            <p class="text-xs text-slate-300 font-serif leading-relaxed sample-text">${s}</p>
+                        </div>
+                    `).join('');
+                    if (!this.dom.views.idle.classList.contains('hidden')) this.switchView('idle');
                 }
             },
-
-            toggleMega(show) {
-                if(show) this.dom.megaModal.classList.add('open');
-                else this.dom.megaModal.classList.remove('open');
+            useSample(el) {
+                const text = el.querySelector('.sample-text').textContent;
+                this.dom.input.value = text; this.dom.input.focus();
+                this.dom.input.classList.add('ring-2', 'ring-emerald-500'); setTimeout(() => this.dom.input.classList.remove('ring-2', 'ring-emerald-500'), 500);
             },
-
+            toggleModal(el, show) { if(show) el.classList.add('open'); else el.classList.remove('open'); },
             showTooltip(el, key) {
-                const text = TOOLTIPS_VI[key];
-                if (!text) return;
-                
-                const { tooltip } = this.dom;
-                tooltip.content.innerHTML = `
-                    <div class="tooltip-header">
-                        <i class="fa-solid fa-language text-emerald-400"></i> Vietnamese Explanation
-                    </div>
-                    ${text}
-                `;
-                
-                const rect = el.getBoundingClientRect();
-                
-                tooltip.el.style.top = `${rect.bottom + 8}px`;
-                tooltip.el.style.left = `${rect.left}px`;
-                tooltip.el.style.opacity = '1';
-                tooltip.el.style.transform = 'translateY(0)';
+                const text = TOOLTIPS_VI[key]; if (!text) return;
+                const { tooltip } = this.dom; tooltip.content.innerHTML = `<div class="tooltip-header"><i class="fa-solid fa-language text-emerald-400"></i> Vietnamese Explanation</div>${text}`;
+                const rect = el.getBoundingClientRect(); tooltip.el.style.top = `${rect.bottom + 8}px`; tooltip.el.style.left = `${rect.left}px`; tooltip.el.style.opacity = '1'; tooltip.el.style.transform = 'translateY(0)';
             },
-
-            hideTooltip() {
-                const { tooltip } = this.dom;
-                tooltip.el.style.opacity = '0';
-                tooltip.el.style.transform = 'translateY(4px)';
-            },
-
+            hideTooltip() { this.dom.tooltip.el.style.opacity = '0'; this.dom.tooltip.el.style.transform = 'translateY(4px)'; },
+            switchView(name) { Object.values(this.dom.views).forEach(el => { el.classList.add('hidden'); el.classList.remove('fade-enter-active'); }); const t = this.dom.views[name]; t.classList.remove('hidden'); void t.offsetWidth; t.classList.add('fade-enter-active'); },
             analyze() {
-                const input = this.dom.input.value.trim();
-                if (!input) return alert('Vui lòng nhập yêu cầu!');
-                this.state.input = input;
-
-                const strategies = getStrategiesForRole(this.state.roleId);
-                const role = ROLES.find(r => r.id === this.state.roleId);
-
+                const input = this.dom.input.value.trim(); if (!input) return alert('Vui lòng nhập yêu cầu!');
+                this.state.input = input; const strategies = getStrategiesForRole(this.state.roleId); const role = ALL_ROLES.find(r => r.id === this.state.roleId);
                 document.getElementById('strategyRoleLabel').textContent = role.lbl;
-                
-                this.dom.stratContainer.innerHTML = strategies.map((s, idx) => `
-                    <div onclick="App.generate('${idx}')" class="glass-panel p-5 rounded-xl cursor-pointer hover:bg-slate-800/50 transition group border-l-4 border-transparent hover:border-blue-500">
-                        <div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <i class="fa-solid ${s.icon} text-blue-400"></i>
-                        </div>
-                        <h4 class="text-white font-bold text-sm mb-1">${s.title}</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed mb-2">${s.desc}</p>
-                    </div>
-                `).join('');
-
-                this.currentStrategies = strategies;
-                this.switchView('strategy');
+                this.dom.stratContainer.innerHTML = strategies.map((s, idx) => `<div onclick="App.generate('${idx}')" class="glass-panel p-5 rounded-xl cursor-pointer hover:bg-slate-800/50 transition group border-l-4 border-transparent hover:border-blue-500"><div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center mb-3 group-hover:scale-110 transition"><i class="fa-solid ${s.icon} text-blue-400"></i></div><h4 class="text-white font-bold text-sm mb-1">${s.title}</h4><p class="text-xs text-slate-400 leading-relaxed mb-2">${s.desc}</p></div>`).join('');
+                this.currentStrategies = strategies; this.switchView('strategy');
             },
-
             generate(idx) {
-                const strategy = this.currentStrategies[idx];
-                const role = ROLES.find(r => r.id === this.state.roleId);
+                const strategy = this.currentStrategies[idx]; const role = ALL_ROLES.find(r => r.id === this.state.roleId);
+                let finalPrompt = "";
                 
-                const mockTranslation = `
-[Intent Detection]: User wants to implement specific functionality.
-[Original VN]: "${this.state.input}"
-[Target English Context]: The user requests a solution for the described feature, focusing on ${strategy.title}.
-`.trim();
-
-                const finalPrompt = `
+                if(role.id === 'claude_opt') {
+                    finalPrompt = `Role: Senior Engineer\nTask: ${this.state.input}\n\n${strategy.promptMod}`;
+                } else if (role.cat === 'Creative') {
+                    finalPrompt = `Role: ${role.lbl} (${role.desc})\nStrategy: ${strategy.title}\n${strategy.promptMod}\n\nTask: ${this.state.input}`;
+                } else if (role.cat === 'Career') {
+                    finalPrompt = `
 You are an expert ${role.lbl} (${role.desc})
 
 CONTEXT STRATEGY: ${strategy.title}
 ${strategy.promptMod}
 
-USER REQUEST (TRANSLATED CONTEXT):
+---
+**GOAL:** Provide comprehensive career support based on the user's request.
+
+**PHASE 1: ANALYSIS & REFINEMENT**
+1. **Understand Context:** Analyze the user's input (Vietnamese) to determine the specific career need (Interview Prep, Job Application, or Skill Training).
+2. **Tone Check:** Ensure the response maintains a professional, encouraging, and constructive tone appropriate for the Vietnamese/International job market.
+3. **Strategy Application:** Apply the selected strategy (e.g., STAR Method) to structure the output effectively.
+
+**PHASE 2: EXECUTION**
+Generate the requested content (Interview Answer, Cover Letter, Email, etc.).
+
+USER REQUEST (VIETNAMESE):
 """
-${mockTranslation}
+${this.state.input}
+"""
+
+OUTPUT FORMAT:
+- **Strategy Note:** (Briefly explain how you applied the strategy).
+- **The Content:** (The full interview answer, letter, or training plan).
+- **Tips:** (Actionable advice for success).
+`.trim();
+                } else if (role.cat === 'Product') {
+                    finalPrompt = `
+You are an expert ${role.lbl} (${role.desc})
+
+CONTEXT STRATEGY: ${strategy.title}
+${strategy.promptMod}
+
+---
+**GOAL:** Deliver high-quality product documentation or analysis.
+
+**PHASE 1: PRODUCT ANALYSIS**
+1. **User Persona Identification:** Who is this for?
+2. **Problem Definition:** What specific pain point are we solving?
+3. **Feasibility Check:** Is this technically viable?
+
+**PHASE 2: EXECUTION**
+Generate the PRD, User Stories, or Roadmap as requested.
+
+USER REQUEST (VIETNAMESE):
+"""
+${this.state.input}
+"""
+
+OUTPUT FORMAT:
+- **Summary:** (Executive Summary of the product feature).
+- **The Artifact:** (The detailed PRD/Story/Roadmap).
+- **KPIs/Metrics:** (How to measure success).
+`.trim();
+                } else if (role.cat === 'Marketing') {
+                    finalPrompt = `
+You are an expert ${role.lbl} (${role.desc})
+
+CONTEXT STRATEGY: ${strategy.title}
+${strategy.promptMod}
+
+---
+**GOAL:** Create high-converting marketing content.
+
+**PHASE 1: AUDIENCE ANALYSIS**
+1. **Target Audience:** Who are we talking to?
+2. **Pain Points:** What keeps them up at night?
+3. **Solution Fit:** How does our product help?
+
+**PHASE 2: CONTENT GENERATION**
+Draft the requested content (Ad Copy, Blog Post, Email) using the selected framework.
+
+USER REQUEST (VIETNAMESE):
+"""
+${this.state.input}
+"""
+
+OUTPUT FORMAT:
+- **Strategy:** (Why this angle?).
+- **The Content:** (The actual copy).
+- **Hook/CTA:** (Critical elements highlighted).
+`.trim();
+                } else {
+                    finalPrompt = `
+You are an expert ${role.lbl} (${role.desc})
+
+CONTEXT STRATEGY: ${strategy.title}
+${strategy.promptMod}
+
+---
+**PHASE 1: FORENSIC CODE ANALYSIS (CRITICAL)**
+Before writing a single line of solution code, you must perform a strict analysis of the user's provided script/snippet.
+1. **Scope Check:** Limit your diagnosis strictly to the scope of the provided script. Do not assume global game state unless visible.
+2. **Logic Tracing:** Trace the usage of the specific reported issue *within the lines of the provided script*.
+3. **Dependency Audit:** Identify external libraries or unknown classes.
+   - *Action:* If unclear, **ASK THE USER**: "I see \`SomeLibrary.Method()\`, do you have the source for this?"
+4. **KNOWLEDGE BASE INTEGRATION (IMPORTANT):**
+   - If the request involves **Unity**, strictly reference the *Unity Scripting API* and *Manual* for best practices.
+   - If the request involves **Cocos**, strictly reference *Cocos Creator API* and *TypeScript* standards.
+   - Explain *why* a specific API method is used based on official documentation to facilitate learning.
+5. **Anti-Hallucination:** NEVER create variables unless declared or passed in context.
+
+**PHASE 2: IMPLEMENTATION**
+Only proceed to code generation if the path is clear. If blocking information is missing, stop and output a "Clarification Needed" block.
+
+USER REQUEST (VIETNAMESE):
+"""
+${this.state.input}
 """
 
 ---
-CRITICAL INSTRUCTIONS FOR ONE-SHOT GENERATION:
-1.  **NO FOLLOW-UP MEMORY:** Treat this as a single-turn request. Provide the COMPLETE solution now.
-2.  **SINGLE FILE MANDATE:** If generating code, output a SINGLE self-contained file (e.g., index.html or PlayerController.cs) using standard markdown code blocks.
-3.  **NO HALLUCINATIONS:** Verify libraries exist.
-4.  **ROBUSTNESS:** Include error handling and comments explaining *why* you chose this approach.
-
 **STRICT CODE GENERATION RULES:**
-1. **NO "LAZY" IMPLEMENTATIONS:** You are strictly FORBIDDEN from generating empty logic blocks such as:
-   \`case State.Engaging: // Handled by animation break;\`
-   You MUST implement the actual logic, event subscriptions, or robust stubs. Code must be fully functional.
-2. **COMPLETE CODE ONLY:** Never use placeholders like \`// ... existing code ...\`. Output the full, runnable file.
-3. **VARIABLE PERSISTENCE:** Do NOT rename existing variables unless explicitly asked. Preserving legacy naming is a priority.
-4. **VERIFICATION PROTOCOL:** Mentally triple-check the code for syntax and logic errors before outputting.
+1. **NO "LAZY" IMPLEMENTATIONS:** Code must be fully functional.
+2. **SINGLE FILE MANDATE:** Output a SINGLE self-contained file.
+3. **COMPLETE CODE ONLY:** Never use placeholders.
+4. **VARIABLE PERSISTENCE:** Do NOT rename existing variables.
 
 OUTPUT FORMAT:
-- Brief Architectural Decision (Why this approach?)
-- The Complete Code Block
-- Integration/Usage Notes
+- **Architectural Analysis:** (Your findings from Phase 1).
+- **Docs Reference:** (Links or citations to official API docs used).
+- **The Complete Code Block:** (The solution).
 `.trim();
+                }
 
                 this.dom.output.value = finalPrompt;
+                StorageManager.saveHistory({ timestamp: new Date().toISOString(), roleId: this.state.roleId, roleLabel: role.lbl, strategyTitle: strategy.title, input: this.state.input, prompt: finalPrompt });
                 this.switchView('result');
-            },
-
-            switchView(name) {
-                Object.values(this.dom.views).forEach(el => {
-                    el.classList.add('hidden');
-                    el.classList.remove('fade-enter-active');
-                });
-                const target = this.dom.views[name];
-                target.classList.remove('hidden');
-                void target.offsetWidth; 
-                target.classList.add('fade-enter-active');
             }
         };
-
-        window.App = App;
-        document.addEventListener('DOMContentLoaded', () => App.init());
+        window.App = App; document.addEventListener('DOMContentLoaded', () => App.init());
     </script>
 </body>
 </html>
